@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wave Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════
+   TOKENS
+════════════════════════════════════════ */
+:root {
+  --bg:           #e8e2d6;
+  --surface:      #f0ebe0;
+  --surface-2:    #f7f4ec;
+  --surface-3:    #fdfbf7;
+  --ink:          #18140e;
+  --ink-2:        #524b42;
+  --ink-3:        #8a8078;
+  --ocean:        #2b5c6a;
+  --ocean-2:      #3a7585;
+  --ocean-pale:   #c8dde4;
+  --sand:         #b5965e;
+  --sand-light:   #ecdec4;
+  --border:       #ccc3b0;
+  --border-light: #dbd4c4;
+  --danger:       #9e3535;
+  --r:            10px;
+  --r-sm:         6px;
+  --r-pill:       50px;
+  --sidebar-w:    220px;
+  --nav-h:        64px;
+  --header-h:     54px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; -webkit-text-size-adjust: 100%; overscroll-behavior: none; }
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg); color: var(--ink);
+  font-size: 15px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ════════════════════════════════════════
+   SHARED COMPONENTS
+════════════════════════════════════════ */
+
+/* — Chips — */
+.chip-group { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: inline-flex; align-items: center;
+  padding: 5px 12px; border: 1.5px solid var(--border);
+  border-radius: var(--r-pill); font-size: 13px;
+  cursor: pointer; transition: all .1s;
+  background: var(--surface-2); color: var(--ink-2);
+  user-select: none; -webkit-tap-highlight-color: transparent;
+}
+.chip:hover { border-color: var(--ocean-pale); }
+.chip.active { background: var(--ocean); border-color: var(--ocean); color: #fff; font-weight: 500; }
+
+/* — Segmented — */
+.seg-control {
+  display: flex; background: var(--surface);
+  border: 1.5px solid var(--border); border-radius: var(--r-sm); overflow: hidden;
+}
+.seg-option {
+  flex: 1; padding: 7px 4px; text-align: center; font-size: 13px;
+  cursor: pointer; background: transparent;
+  border-right: 1px solid var(--border-light);
+  transition: all .12s; color: var(--ink-2); user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.seg-option:last-child { border-right: none; }
+.seg-option.active { background: var(--ocean); color: #fff; font-weight: 500; }
+
+/* — Fields — */
+.field-group { margin-bottom: 13px; }
+.field-group:last-child { margin-bottom: 0; }
+.field-label {
+  display: block; font-size: 11px; font-weight: 600;
+  color: var(--ink-3); margin-bottom: 5px;
+  text-transform: uppercase; letter-spacing: .05em;
+  font-family: 'DM Mono', monospace;
+}
+.field-input {
+  width: 100%; padding: 9px 11px;
+  border: 1.5px solid var(--border); border-radius: var(--r-sm);
+  font-family: 'DM Sans', sans-serif; font-size: 15px;
+  background: var(--bg); color: var(--ink);
+  outline: none; transition: border-color .15s;
+  -webkit-appearance: none; appearance: none;
+}
+.field-input:focus { border-color: var(--ocean-2); }
+.field-input::placeholder { color: var(--ink-3); }
+textarea.field-input { resize: none; min-height: 88px; line-height: 1.5; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* — Rating — */
+.rating-row { display: flex; gap: 4px; }
+.rating-btn {
+  flex: 1; aspect-ratio: 1; border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); font-size: 12px;
+  font-family: 'DM Mono', monospace; cursor: pointer;
+  background: var(--surface); color: var(--ink-2);
+  transition: all .1s; display: flex;
+  align-items: center; justify-content: center; padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.rating-btn.active { background: var(--ocean); border-color: var(--ocean); color: #fff; font-weight: 500; }
+
+/* — Buttons — */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 16px; border-radius: var(--r-sm);
+  font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all .12s; border: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-primary { background: var(--ocean); color: #fff; width: 100%; justify-content: center; padding: 13px; font-size: 16px; font-weight: 600; border-radius: var(--r); }
+.btn-primary:active { opacity: .85; }
+.btn-secondary-sm { background: none; border: 1.5px solid var(--border); color: var(--ink-2); padding: 6px 12px; font-size: 13px; }
+.btn-secondary-sm:hover { background: var(--surface); }
+.btn-danger { background: none; border: 1.5px solid var(--danger); color: var(--danger); width: 100%; justify-content: center; padding: 11px; border-radius: var(--r); }
+
+/* — Badges — */
+.badge {
+  display: inline-flex; align-items: center; padding: 2px 8px;
+  border-radius: var(--r-pill); font-size: 11px;
+  font-family: 'DM Mono', monospace; font-weight: 500;
+  background: var(--ocean-pale); color: var(--ocean);
+}
+.badge-sand { background: var(--sand-light); color: var(--sand); }
+
+/* — Cards — */
+.card {
+  background: var(--surface-3); border: 1px solid var(--border-light);
+  border-radius: var(--r); padding: 14px; margin-bottom: 8px;
+}
+.card-tap {
+  cursor: pointer; transition: transform .1s;
+  user-select: none; -webkit-tap-highlight-color: transparent;
+}
+
+/* — Session card inner — */
+.session-card { display: flex; align-items: center; gap: 12px; }
+.s-date-block { text-align: center; min-width: 36px; flex-shrink: 0; }
+.s-date-month { font-family: 'DM Mono', monospace; font-size: 9px; text-transform: uppercase; color: var(--ink-3); letter-spacing: .04em; }
+.s-date-day { font-family: 'Playfair Display', Georgia, serif; font-size: 26px; font-weight: 700; color: var(--ink); line-height: 1; }
+.s-divider { width: 1px; height: 40px; background: var(--border); flex-shrink: 0; }
+.s-info { flex: 1; min-width: 0; }
+.s-spot { font-family: 'Playfair Display', Georgia, serif; font-size: 16px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+.s-meta { font-size: 12px; color: var(--ink-3); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+.s-board { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-3); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rating-circle {
+  width: 36px; height: 36px; border-radius: 50%; color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; flex-shrink: 0;
+}
+
+/* — Section label — */
+.section-label {
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-3); margin-bottom: 8px; margin-top: 20px;
+}
+.section-label:first-child { margin-top: 0; }
+
+/* — Form section title — */
+.fsec-title {
+  font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 600;
+  letter-spacing: .09em; text-transform: uppercase;
+  color: var(--ink-3); margin-bottom: 14px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+/* — Empty state — */
+.empty-state { text-align: center; padding: 56px 24px; color: var(--ink-3); }
+.empty-icon { font-size: 34px; margin-bottom: 12px; opacity: .6; }
+.empty-title { font-family: 'Playfair Display', Georgia, serif; font-size: 18px; color: var(--ink-2); margin-bottom: 6px; }
+.empty-sub { font-size: 13px; margin-bottom: 20px; }
+.empty-cta { max-width: 220px; margin: 0 auto; display: block; }
+
+/* — Detail — */
+.det-spot { font-family: 'Playfair Display', Georgia, serif; font-size: 24px; font-weight: 700; line-height: 1.15; flex: 1; }
+.det-rating-lg { width: 50px; height: 50px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', Georgia, serif; font-size: 20px; font-weight: 700; flex-shrink: 0; }
+.det-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-3); letter-spacing: .03em; margin-top: 4px; }
+.det-sec-title { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 10px; padding-bottom: 7px; border-bottom: 1px solid var(--border-light); }
+.det-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px 16px; }
+.det-fl { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); font-family: 'DM Mono', monospace; margin-bottom: 1px; }
+.det-fv { font-size: 14px; color: var(--ink); font-weight: 500; }
+.det-notes { font-size: 14px; color: var(--ink-2); line-height: 1.7; font-style: italic; font-family: 'Playfair Display', Georgia, serif; }
+.delete-zone { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border-light); }
+
+/* — Toast — */
+.toast {
+  position: fixed; bottom: 20px; left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--ink); color: #fff; padding: 9px 18px;
+  border-radius: var(--r); font-size: 13px; font-weight: 500;
+  opacity: 0; transition: all .22s; pointer-events: none;
+  white-space: nowrap; z-index: 9999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* — Mini stats — */
+.mini-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
+.msc { background: var(--surface-3); border: 1px solid var(--border-light); border-radius: var(--r); padding: 12px 10px; text-align: center; }
+.msc-val { font-family: 'Playfair Display', Georgia, serif; font-size: 24px; font-weight: 700; color: var(--ocean); line-height: 1; }
+.msc-lbl { font-size: 10px; color: var(--ink-3); margin-top: 4px; font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .04em; }
+
+/* — Stats grid — */
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 9px; }
+.stc { background: var(--surface-3); border: 1px solid var(--border-light); border-radius: var(--r); padding: 16px 14px; }
+.stc.w2 { grid-column: span 2; }
+.stc-val { font-family: 'Playfair Display', Georgia, serif; font-size: 34px; font-weight: 700; color: var(--ocean); line-height: 1; margin-bottom: 5px; }
+.stc-val.md { font-size: 20px; padding-top: 6px; }
+.stc-lbl { font-size: 10px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .07em; font-family: 'DM Mono', monospace; }
+
+.hidden { display: none !important; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ════════════════════════════════════════
+   MOBILE LAYOUT  ( < 768px )
+════════════════════════════════════════ */
+#app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: var(--bg); }
+
+/* — Bottom nav (mobile) — */
+.bottom-nav {
+  display: flex; height: var(--nav-h);
+  background: var(--surface-2); border-top: 1px solid var(--border);
+  flex-shrink: 0; order: 2;
+}
+.bottom-nav .nav-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 3px; background: none; border: none; cursor: pointer;
+  color: var(--ink-3); font-family: 'DM Sans', sans-serif;
+  font-size: 10px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase;
+  transition: color .15s; padding: 6px 0 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+.bottom-nav .nav-btn.active { color: var(--ocean); }
+.nav-icon svg { width: 22px; height: 22px; stroke-width: 1.7; }
+
+/* — Main content wrapper (mobile) — */
+.screens-wrap { flex: 1; overflow: hidden; display: flex; flex-direction: column; order: 1; }
+
+/* — Screen (mobile) — */
+.screen { display: none; flex: 1; flex-direction: column; overflow: hidden; }
+.screen.active { display: flex; }
+
+/* — Screen header (mobile) — */
+.screen-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 14px; height: var(--header-h);
+  background: var(--bg); border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0; position: relative;
+}
+.screen-header h2 {
+  font-family: 'Playfair Display', Georgia, serif; font-size: 19px; font-weight: 700;
+  position: absolute; left: 50%; transform: translateX(-50%); pointer-events: none;
+}
+.hdr-btn {
+  background: none; border: none; font-family: 'DM Sans', sans-serif;
+  font-size: 14px; font-weight: 500; color: var(--ocean-2); cursor: pointer;
+  padding: 6px 0; min-width: 44px; -webkit-tap-highlight-color: transparent;
+}
+.hdr-btn.danger { color: var(--danger); }
+.hdr-btn.right { text-align: right; }
+
+/* — Screen body (mobile) — */
+.screen-body {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 14px; -webkit-overflow-scrolling: touch;
+}
+
+/* — Home header (mobile) — */
+.home-header {
+  padding: 18px 14px 14px; background: var(--bg);
+  border-bottom: 1px solid var(--border-light); flex-shrink: 0;
+}
+.home-app-title { font-family: 'Playfair Display', Georgia, serif; font-size: 36px; font-weight: 900; letter-spacing: -1.5px; line-height: 1; }
+.home-sub { font-size: 13px; color: var(--ink-3); margin-top: 2px; font-style: italic; font-family: 'Playfair Display', Georgia, serif; }
+.home-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-3); margin-top: 10px; letter-spacing: .04em; text-transform: uppercase; }
+
+/* — Log save bar (mobile) — */
+.log-save-bar { padding: 10px 14px; background: var(--bg); border-top: 1px solid var(--border-light); flex-shrink: 0; }
+
+/* — Form section (mobile) — */
+.form-section { background: var(--surface-2); border: 1px solid var(--border-light); border-radius: var(--r); padding: 14px; margin-bottom: 10px; }
+
+/* Sessions count */
+#sessions-count { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-3); min-width: 44px; text-align: right; }
+
+/* ════════════════════════════════════════
+   DESKTOP LAYOUT  ( ≥ 768px )
+════════════════════════════════════════ */
+@media (min-width: 768px) {
+
+  #app { flex-direction: row; }
+
+  /* — Sidebar — */
+  .sidebar {
+    display: flex !important;
+    width: var(--sidebar-w); flex-shrink: 0;
+    flex-direction: column;
+    background: var(--surface); border-right: 1px solid var(--border);
+    height: 100vh; overflow: hidden;
+  }
+  .sidebar-brand { padding: 28px 20px 20px; border-bottom: 1px solid var(--border-light); flex-shrink: 0; }
+  .brand-title { font-family: 'Playfair Display', Georgia, serif; font-size: 26px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
+  .brand-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--ink-3); letter-spacing: .06em; text-transform: uppercase; margin-top: 5px; }
+  .sidebar-nav { flex: 1; padding: 14px 10px; display: flex; flex-direction: column; gap: 2px; }
+  .sidebar-nav .nav-btn {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: var(--r-sm);
+    cursor: pointer; color: var(--ink-2); font-size: 14px; font-weight: 500;
+    transition: all .12s; border: none; background: none;
+    width: 100%; text-align: left;
+    -webkit-tap-highlight-color: transparent;
+    flex-direction: row; /* override mobile column */
+    justify-content: flex-start;
+    height: auto; /* override mobile nav-btn height */
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0; text-transform: none;
+  }
+  .sidebar-nav .nav-btn .nav-label { display: block; }
+  .sidebar-nav .nav-btn:hover { background: var(--surface-2); color: var(--ink); }
+  .sidebar-nav .nav-btn.active { background: var(--ocean); color: #fff; }
+  .sidebar-nav .nav-btn .nav-icon svg { width: 16px; height: 16px; stroke-width: 1.8; }
+  .sidebar-footer { padding: 16px 20px; border-top: 1px solid var(--border-light); flex-shrink: 0; }
+  .strip-item { display: flex; justify-content: space-between; align-items: baseline; font-size: 11px; margin-bottom: 7px; }
+  .strip-item:last-child { margin-bottom: 0; }
+  .strip-lbl { color: var(--ink-3); font-family: 'DM Mono', monospace; text-transform: uppercase; letter-spacing: .05em; }
+  .strip-val { font-family: 'Playfair Display', Georgia, serif; font-size: 15px; font-weight: 700; color: var(--ocean); }
+
+  /* — Hide mobile nav, show desktop sidebar — */
+  .bottom-nav { display: none; }
+  .screens-wrap { flex: 1; min-width: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+  .screen:not(.active) { display: none !important; }
+  .screen.active { display: flex !important; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
+
+  /* — Topbar (desktop) — */
+  .topbar {
+    display: flex !important;
+    align-items: center; justify-content: space-between;
+    padding: 0 28px; height: 58px;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--surface-2); flex-shrink: 0;
+  }
+  .topbar-title { font-family: 'Playfair Display', Georgia, serif; font-size: 18px; font-weight: 700; }
+  .topbar-meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-3); }
+  .topbar-actions { display: flex; gap: 8px; }
+  .topbar-btn {
+    padding: 7px 14px; border-radius: var(--r-sm);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    cursor: pointer; border: none; transition: all .12s;
+  }
+  .topbar-btn-primary { background: var(--ocean); color: #fff; }
+  .topbar-btn-primary:hover { background: var(--ocean-2); }
+  .topbar-btn-secondary { background: var(--surface); border: 1.5px solid var(--border); color: var(--ink-2); }
+  .topbar-btn-secondary:hover { background: var(--bg); }
+
+  /* — Screen headers hidden on desktop — */
+  .screen-header { display: none; }
+  .home-header   { display: none; }
+  .log-save-bar  { display: none; } /* save button in sidebar instead */
+
+  /* — Screen body (desktop) — */
+  .screen-body { padding: 24px 28px; }
+
+  /* — Screen: home — */
+  #screen-home { flex-direction: column; }
+  #screen-home .screen-body { padding: 24px 28px; }
+
+  /* — Home hero — */
+  .home-hero {
+    background: var(--ocean); border-radius: var(--r);
+    padding: 28px 28px 22px; color: #fff;
+    margin-bottom: 10px; position: relative; overflow: hidden;
+  }
+  .home-hero::before { content:''; position:absolute; top:-30px; right:-30px; width:180px; height:180px; border-radius:50%; background:rgba(255,255,255,.05); pointer-events:none; }
+  .home-hero-greeting { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:.07em; text-transform:uppercase; opacity:.65; margin-bottom:8px; }
+  .home-hero-title { font-family:'Playfair Display',Georgia,serif; font-size:30px; font-weight:700; margin-bottom:18px; line-height:1.1; }
+  .home-hero-stats { display:flex; gap:28px; }
+  .hhs-val { font-family:'Playfair Display',Georgia,serif; font-size:26px; font-weight:700; line-height:1; }
+  .hhs-lbl { font-size:11px; opacity:.65; margin-top:2px; font-family:'DM Mono',monospace; text-transform:uppercase; letter-spacing:.04em; }
+
+  /* Home sessions grid */
+  .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .card-tap:hover { border-color: var(--border); background: var(--surface-2); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+
+  /* — Screen: LOG (centered) — */
+  #screen-log .screen-body { padding: 0; }
+  .log-main-area { flex: 1; overflow-y: auto; padding: 32px 40px 32px; position: relative; }
+  #screen-log { position: relative; display: flex; flex-direction: column; }
+  .log-center { max-width: 900px; margin: 0 auto; }
+  .log-aside { display: none; }
+  .log-aside-save { display: none; }
+  #mob-log-body { display: none; }
+  .log-save-bar { display: none; }
+  #sessions-list-mob { display: none; }
+  /* Floating save bar */
+  .log-dt-save-bar {
+    padding: 12px 40px;
+    background: var(--surface-2);
+    border-top: 1px solid var(--border-light);
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    flex-shrink: 0;
+  }
+  .log-dt-save-bar .topbar-btn { padding: 9px 28px; font-size: 14px; }
+  .form-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-cols.three { grid-template-columns: 1fr 1fr 1fr; }
+  .form-cols.four  { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .form-section-dt { background: var(--surface-3); border: 1px solid var(--border-light); border-radius: var(--r); padding: 20px 22px; margin-bottom: 12px; }
+
+  /* — Screen: SESSIONS — */
+  #screen-sessions { flex-direction: column !important; position: relative; overflow: hidden; }
+
+  /* Full-width list pane */
+  .sess-list-pane {
+    width: 100%; display: flex; flex-direction: column;
+    overflow: hidden; background: var(--bg); flex: 1; min-height: 0;
+    border-right: none;
+  }
+  .sess-list-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px; height: 58px; flex-shrink: 0;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--surface-2);
+  }
+  .sess-list-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 20px; font-weight: 700; color: var(--ink);
+  }
+  #sess-count-dt {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--ink-3); letter-spacing: .04em;
+  }
+  .sess-list-scroll { flex: 1; overflow-y: auto; padding: 20px 32px; }
+
+  /* Full-width session rows */
+  .sess-row {
+    display: grid;
+    grid-template-columns: 52px 1px 1fr auto auto;
+    align-items: center; gap: 16px;
+    padding: 14px 18px; border-radius: var(--r);
+    cursor: pointer; transition: all .12s;
+    border: 1.5px solid transparent; margin-bottom: 5px;
+    background: var(--surface-3);
+  }
+  .sess-row:hover { border-color: var(--border); box-shadow: 0 1px 6px rgba(0,0,0,.07); transform: translateY(-1px); }
+  .sess-row.sel { border-color: var(--ocean-pale); background: #fff; box-shadow: 0 2px 10px rgba(43,92,106,.12); }
+  .sess-row-date { text-align: center; }
+  .sess-row-month { font-family: 'DM Mono', monospace; font-size: 9px; text-transform: uppercase; color: var(--ink-3); }
+  .sess-row-day { font-family: 'Playfair Display', Georgia, serif; font-size: 26px; font-weight: 700; line-height: 1; color: var(--ink); }
+  .sess-row-div { width: 1px; height: 36px; background: var(--border-light); }
+  .sess-row-info { min-width: 0; }
+  .sess-row-spot { font-family: 'Playfair Display', Georgia, serif; font-size: 16px; font-weight: 700; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
+  .sess-row-meta { font-size: 12px; color: var(--ink-3); margin-top: 4px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .sess-row-board { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--ink-3); margin-top: 3px; }
+  .sess-row-chips { display: flex; gap: 5px; align-items: center; flex-wrap: nowrap; }
+  .rc-sm { width: 36px; height: 36px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+
+  /* Slide-over detail panel */
+  .sess-detail-pane {
+    position: absolute; top: 0; right: 0; bottom: 0;
+    width: 480px; max-width: 90%;
+    background: var(--surface-3);
+    border-left: 1px solid var(--border-light);
+    box-shadow: -8px 0 32px rgba(0,0,0,.12);
+    display: flex; flex-direction: column;
+    transform: translateX(100%);
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+    z-index: 10;
+  }
+  .sess-detail-pane.open { transform: translateX(0); }
+
+  /* Dimmer backdrop */
+  .sess-backdrop {
+    position: absolute; inset: 0; background: rgba(24,20,14,.18);
+    opacity: 0; pointer-events: none;
+    transition: opacity .28s ease; z-index: 9;
+  }
+  .sess-backdrop.show { opacity: 1; pointer-events: auto; }
+
+  .det-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--ink-3); gap: 6px; }
+  .det-empty-icon { font-size: 28px; opacity: .4; }
+  .det-empty-text { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: .04em; }
+  .det-topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 22px; height: 56px; border-bottom: 1px solid var(--border-light); flex-shrink: 0; background: var(--surface-2); gap: 8px; }
+  .det-topbar-left { display: flex; align-items: center; gap: 10px; }
+  .det-close-btn { background: none; border: none; cursor: pointer; color: var(--ink-3); padding: 4px 6px; border-radius: 4px; font-size: 18px; line-height: 1; transition: color .12s; }
+  .det-close-btn:hover { color: var(--ink); }
+  .det-topbar-title { font-family: 'Playfair Display', Georgia, serif; font-size: 15px; font-weight: 700; }
+  .det-topbar-actions { display: flex; gap: 7px; align-items: center; }
+  .det-inner { flex: 1; overflow-y: auto; padding: 24px; }
+  .btn-danger-sm { background: none; border: 1.5px solid var(--danger); color: var(--danger); padding: 5px 12px; font-size: 12px; border-radius: var(--r-sm); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all .12s; }
+  .btn-danger-sm:hover { background: var(--danger); color: #fff; }
+  .btn-edit-sm { background: var(--ocean); border: 1.5px solid var(--ocean); color: #fff; padding: 5px 14px; font-size: 12px; border-radius: var(--r-sm); cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 500; transition: all .12s; }
+  .btn-edit-sm:hover { background: var(--ocean-2); border-color: var(--ocean-2); }
+
+  /* — Stats — */
+  #screen-stats .screen-body { padding: 24px 28px; }
+  .stats-grid { grid-template-columns: repeat(4,1fr); }
+
+  /* — Mobile-only elements hidden — */
+  #mobile-home-cta { display: none; }
+  .form-section { background: none; border: none; padding: 0; margin-bottom: 20px; }
+}
+
+/* ════════════════════════════════════════
+   MOBILE-ONLY: hide desktop elements
+════════════════════════════════════════ */
+@media (max-width: 767px) {
+  .sidebar       { display: none; }
+  .topbar        { display: none; }
+  .home-hero     { display: none; }
+  .home-grid     { display: none; }
+  .log-main-area { display: none; }
+  .log-aside     { display: none; }
+  .log-dt-save-bar { display: none; }
+  .sess-list-pane   { display: none; }
+  .sess-detail-pane { display: none; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .stc.w2 { grid-column: span 2; }
+  #screen-sessions { flex-direction: column !important; }
+
+  /* Mobile chip sizing */
+  .chip { font-size: 13px; padding: 5px 12px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ════ SIDEBAR (desktop only) ════ -->
+  <aside class="sidebar" style="display:none">
+    <div class="sidebar-brand">
+      <div class="brand-title">Wave<br>Log</div>
+      <div class="brand-sub" id="sidebar-date"></div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-screen="home">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.55 5.45 21 6 21H9M19 10L21 12M19 10V20C19 20.55 18.55 21 18 21H15M9 21V15C9 14.45 9.45 14 10 14H14C14.55 14 15 14.45 15 15V21M9 21H15" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-btn" data-screen="log">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9" stroke-linecap="round"/><path d="M12 8V16M8 12H16" stroke-linecap="round"/></svg></span>
+        <span class="nav-label">Log Session</span>
+      </button>
+      <button class="nav-btn" data-screen="sessions">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 6H20M4 12H20M4 18H13" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="nav-label">Sessions</span>
+      </button>
+      <button class="nav-btn" data-screen="stats">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 20V14M10 20V10M14 20V4M18 20V8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="nav-label">Stats</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div id="sidebar-stats"></div>
+    </div>
+  </aside>
+
+  <!-- ════ SCREENS WRAP ════ -->
+  <div class="screens-wrap">
+
+    <!-- ── HOME ── -->
+    <div class="screen active" id="screen-home">
+      <!-- Desktop topbar -->
+      <div class="topbar" style="display:none">
+        <div class="topbar-title">Overview</div>
+        <div class="topbar-meta" id="home-topbar-meta"></div>
+        <div class="topbar-actions">
+          <button class="topbar-btn topbar-btn-primary" id="btn-dt-home-log">+ Log a Session</button>
+        </div>
+      </div>
+      <!-- Mobile header -->
+      <div class="home-header">
+        <div class="home-app-title">Wave Log</div>
+        <div class="home-sub">Your personal surf notebook</div>
+        <div class="home-date" id="home-date-mob"></div>
+      </div>
+      <div class="screen-body">
+        <!-- Mobile CTA -->
+        <div id="mobile-home-cta" style="margin-bottom:18px">
+          <button class="btn-primary" id="btn-mob-home-log">+ Log a Session</button>
+        </div>
+        <!-- Mobile stats strip -->
+        <div id="mob-stats-strip"></div>
+        <!-- Desktop hero (hidden mobile) -->
+        <div class="home-hero" style="display:none" id="desk-hero"></div>
+        <!-- Content: shared section labels + cards for mobile, grid for desktop -->
+        <div id="home-content"></div>
+        <!-- Desktop session grid -->
+        <div class="home-grid" style="display:none" id="desk-home-grid"></div>
+      </div>
+    </div>
+
+    <!-- ── LOG ── -->
+    <div class="screen" id="screen-log">
+      <!-- Desktop topbar -->
+      <div class="topbar" style="display:none">
+        <div class="topbar-title">Log a Session</div>
+        <div></div>
+        <div class="topbar-actions">
+          <button class="topbar-btn topbar-btn-secondary" id="btn-dt-clear">Clear</button>
+          <button class="topbar-btn topbar-btn-primary" id="btn-dt-save">Save Session</button>
+        </div>
+      </div>
+      <!-- Mobile header -->
+      <div class="screen-header">
+        <button class="hdr-btn" id="btn-mob-clear">Clear</button>
+        <h2>Log Session</h2>
+        <div style="min-width:44px"></div>
+      </div>
+
+      <!-- Desktop: centered multi-column form -->
+      <div class="log-main-area">
+        <div class="log-center">
+
+          <!-- Row 1: Where & When -->
+          <div class="form-section-dt">
+            <div class="fsec-title">📍 Where &amp; When</div>
+            <div class="form-cols four" style="align-items:end">
+              <div class="field-group" style="grid-column:span 2;margin-bottom:0">
+                <label class="field-label">Spot *</label>
+                <input class="field-input" id="f-spot" type="text" placeholder="e.g. La Gravière, Hossegor" autocomplete="off">
+              </div>
+              <div class="field-group" style="margin-bottom:0">
+                <label class="field-label">Date</label>
+                <input class="field-input" id="f-date" type="date">
+              </div>
+              <div class="field-group" style="margin-bottom:0">
+                <label class="field-label">Time</label>
+                <input class="field-input" id="f-time" type="time">
+              </div>
+            </div>
+            <div class="field-group" style="margin-top:14px;margin-bottom:0">
+              <label class="field-label">Duration</label>
+              <div class="chip-group" id="chips-hours-dt">
+                <div class="chip" data-value="0.5h">0.5h</div><div class="chip" data-value="1h">1h</div>
+                <div class="chip" data-value="1.5h">1.5h</div><div class="chip" data-value="2h">2h</div>
+                <div class="chip" data-value="2.5h">2.5h</div><div class="chip" data-value="3h">3h</div>
+                <div class="chip" data-value="3h+">3h+</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 2: Waves + Elements side by side -->
+          <div class="form-cols" style="align-items:start">
+            <div class="form-section-dt" style="margin-bottom:0">
+              <div class="fsec-title">🌊 Waves</div>
+              <div class="field-group"><label class="field-label">Wave Size</label>
+                <div class="chip-group" id="chips-waveSize-dt">
+                  <div class="chip" data-value="XS">XS</div><div class="chip" data-value="S">S</div>
+                  <div class="chip" data-value="S-M">S-M</div><div class="chip" data-value="M">M</div>
+                  <div class="chip" data-value="M-L">M-L</div><div class="chip" data-value="L">L</div>
+                  <div class="chip" data-value="XL">XL</div><div class="chip" data-value="XXL">XXL</div>
+                </div>
+              </div>
+              <div class="field-group"><label class="field-label">Wave Shape</label>
+                <div class="chip-group" id="chips-waveShape-dt">
+                  <div class="chip" data-value="Hollow">Hollow</div><div class="chip" data-value="Punchy">Punchy</div>
+                  <div class="chip" data-value="Mushy">Mushy</div><div class="chip" data-value="Fat">Fat</div>
+                  <div class="chip" data-value="Crumbly">Crumbly</div>
+                </div>
+              </div>
+              <div class="field-group"><label class="field-label">Tide</label>
+                <div class="chip-group" id="chips-tide-dt">
+                  <div class="chip" data-value="Low">Low</div><div class="chip" data-value="Mid">Mid</div>
+                  <div class="chip" data-value="High">High</div><div class="chip" data-value="Dropping">Dropping</div>
+                  <div class="chip" data-value="Rising">Rising</div>
+                </div>
+              </div>
+              <div class="field-group" style="margin-bottom:0"><label class="field-label">Swell Direction</label>
+                <div class="chip-group" id="chips-swellDirection-dt">
+                  <div class="chip" data-value="N">N</div><div class="chip" data-value="NE">NE</div>
+                  <div class="chip" data-value="E">E</div><div class="chip" data-value="SE">SE</div>
+                  <div class="chip" data-value="S">S</div><div class="chip" data-value="SW">SW</div>
+                  <div class="chip" data-value="W">W</div><div class="chip" data-value="NW">NW</div>
+                </div>
+              </div>
+            </div>
+            <div class="form-section-dt" style="margin-bottom:0">
+              <div class="fsec-title">🌬 Elements</div>
+              <div class="field-group"><label class="field-label">Wind</label>
+                <div class="chip-group" id="chips-windType-dt">
+                  <div class="chip" data-value="Glassy">Glassy</div><div class="chip" data-value="Offshore">Offshore</div>
+                  <div class="chip" data-value="Cross-off">Cross-off</div><div class="chip" data-value="Cross-on">Cross-on</div>
+                  <div class="chip" data-value="Onshore">Onshore</div>
+                </div>
+              </div>
+              <div class="field-group"><label class="field-label">Current</label>
+                <div class="chip-group" id="chips-current-dt">
+                  <div class="chip" data-value="None">None</div>
+                  <div class="chip" data-value="Light">Light</div>
+                  <div class="chip" data-value="Strong">Strong</div>
+                </div>
+              </div>
+              <div class="field-group" style="margin-bottom:0"><label class="field-label">Crowd</label>
+                <div class="chip-group" id="chips-crowd-dt">
+                  <div class="chip" data-value="Empty">Empty</div><div class="chip" data-value="Quiet">Quiet</div>
+                  <div class="chip" data-value="Busy">Busy</div><div class="chip" data-value="Packed">Packed</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 3: Setup + Reflection side by side -->
+          <div class="form-cols" style="align-items:start">
+            <div class="form-section-dt" style="margin-bottom:0">
+              <div class="fsec-title">🏄 Setup</div>
+              <div class="form-cols" style="gap:12px">
+                <div class="field-group" style="margin-bottom:0">
+                  <label class="field-label">Water Temp (°C)</label>
+                  <input class="field-input" id="f-waterTemp" type="number" placeholder="18" min="5" max="35" inputmode="numeric">
+                </div>
+                <div class="field-group" style="margin-bottom:0">
+                  <label class="field-label">Board</label>
+                  <input class="field-input" id="f-board" type="text" placeholder="6'2&quot; thruster…" autocomplete="off">
+                </div>
+              </div>
+              <div class="field-group" style="margin-top:12px"><label class="field-label">Wetsuit</label>
+                <div class="seg-control" id="seg-suit-dt">
+                  <div class="seg-option active" data-value="Trunks">Trunks</div>
+                  <div class="seg-option" data-value="Spring">Spring</div>
+                  <div class="seg-option" data-value="3/2">3/2</div>
+                  <div class="seg-option" data-value="4/3">4/3</div>
+                  <div class="seg-option" data-value="5/4">5/4</div>
+                </div>
+              </div>
+              <div class="field-group" style="margin-bottom:0"><label class="field-label">Session</label>
+                <div class="seg-control" id="seg-sessionType-dt">
+                  <div class="seg-option active" data-value="Solo">Solo</div>
+                  <div class="seg-option" data-value="With others">With others</div>
+                </div>
+              </div>
+              <div class="field-group hidden" id="field-withWho-dt" style="margin-top:12px;margin-bottom:0">
+                <label class="field-label">Who with?</label>
+                <input class="field-input" id="f-withWho" type="text" placeholder="Friends, crew…" autocomplete="off">
+              </div>
+            </div>
+            <div class="form-section-dt" style="margin-bottom:0">
+              <div class="fsec-title">⭐ Reflection</div>
+              <div class="field-group"><label class="field-label">Rating</label>
+                <div class="rating-row" id="rating-row-dt">
+                  <div class="rating-btn" data-value="1">1</div><div class="rating-btn" data-value="2">2</div>
+                  <div class="rating-btn" data-value="3">3</div><div class="rating-btn" data-value="4">4</div>
+                  <div class="rating-btn" data-value="5">5</div><div class="rating-btn" data-value="6">6</div>
+                  <div class="rating-btn" data-value="7">7</div><div class="rating-btn" data-value="8">8</div>
+                  <div class="rating-btn" data-value="9">9</div><div class="rating-btn" data-value="10">10</div>
+                </div>
+              </div>
+              <div class="field-group" style="margin-bottom:0"><label class="field-label">Notes</label>
+                <textarea class="field-input" id="f-comments" placeholder="How was it? Any memorable waves…" style="min-height:130px"></textarea>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /.log-center -->
+      </div><!-- /.log-main-area -->
+
+      <!-- Desktop floating save bar -->
+      <div class="log-dt-save-bar">
+        <button class="topbar-btn topbar-btn-secondary" id="btn-aside-clear">Clear</button>
+        <button class="topbar-btn topbar-btn-primary" id="btn-aside-save">Save Session</button>
+      </div>
+
+      <!-- Spacer div (log-aside kept in DOM for JS compatibility but hidden) -->
+      <div class="log-aside" style="display:none"></div>
+
+      <!-- Mobile form (stacked sections) -->
+      <div class="screen-body" id="mob-log-body">
+        <div class="form-section">
+          <div class="fsec-title">📍 Where &amp; When</div>
+          <div class="field-group"><label class="field-label">Spot *</label>
+            <input class="field-input" id="f-spot-mob" type="text" placeholder="e.g. La Gravière, Hossegor" autocomplete="off">
+          </div>
+          <div class="field-row">
+            <div class="field-group"><label class="field-label">Date</label>
+              <input class="field-input" id="f-date-mob" type="date">
+            </div>
+            <div class="field-group"><label class="field-label">Time</label>
+              <input class="field-input" id="f-time-mob" type="time">
+            </div>
+          </div>
+          <div class="field-group" style="margin-bottom:0"><label class="field-label">Duration</label>
+            <div class="chip-group" id="chips-hours-mob">
+              <div class="chip" data-value="0.5h">0.5h</div><div class="chip" data-value="1h">1h</div>
+              <div class="chip" data-value="1.5h">1.5h</div><div class="chip" data-value="2h">2h</div>
+              <div class="chip" data-value="2.5h">2.5h</div><div class="chip" data-value="3h">3h</div>
+              <div class="chip" data-value="3h+">3h+</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="fsec-title">🌊 Waves</div>
+          <div class="field-group"><label class="field-label">Wave Size</label>
+            <div class="chip-group" id="chips-waveSize-mob">
+              <div class="chip" data-value="XS">XS</div><div class="chip" data-value="S">S</div>
+              <div class="chip" data-value="S-M">S-M</div><div class="chip" data-value="M">M</div>
+              <div class="chip" data-value="M-L">M-L</div><div class="chip" data-value="L">L</div>
+              <div class="chip" data-value="XL">XL</div><div class="chip" data-value="XXL">XXL</div>
+            </div>
+          </div>
+          <div class="field-group"><label class="field-label">Tide</label>
+            <div class="chip-group" id="chips-tide-mob">
+              <div class="chip" data-value="Low">Low</div><div class="chip" data-value="Mid">Mid</div>
+              <div class="chip" data-value="High">High</div><div class="chip" data-value="Dropping">Dropping</div>
+              <div class="chip" data-value="Rising">Rising</div>
+            </div>
+          </div>
+          <div class="field-group"><label class="field-label">Swell Direction</label>
+            <div class="chip-group" id="chips-swellDirection-mob">
+              <div class="chip" data-value="N">N</div><div class="chip" data-value="NE">NE</div>
+              <div class="chip" data-value="E">E</div><div class="chip" data-value="SE">SE</div>
+              <div class="chip" data-value="S">S</div><div class="chip" data-value="SW">SW</div>
+              <div class="chip" data-value="W">W</div><div class="chip" data-value="NW">NW</div>
+            </div>
+          </div>
+          <div class="field-group" style="margin-bottom:0"><label class="field-label">Wave Shape</label>
+            <div class="chip-group" id="chips-waveShape-mob">
+              <div class="chip" data-value="Hollow">Hollow</div><div class="chip" data-value="Punchy">Punchy</div>
+              <div class="chip" data-value="Mushy">Mushy</div><div class="chip" data-value="Fat">Fat</div>
+              <div class="chip" data-value="Crumbly">Crumbly</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="fsec-title">🌬 Elements</div>
+          <div class="field-group"><label class="field-label">Wind</label>
+            <div class="chip-group" id="chips-windType-mob">
+              <div class="chip" data-value="Glassy">Glassy</div><div class="chip" data-value="Offshore">Offshore</div>
+              <div class="chip" data-value="Cross-off">Cross-off</div><div class="chip" data-value="Cross-on">Cross-on</div>
+              <div class="chip" data-value="Onshore">Onshore</div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group" style="margin-bottom:0"><label class="field-label">Water Temp (°C)</label>
+              <input class="field-input" id="f-waterTemp-mob" type="number" placeholder="18" inputmode="numeric">
+            </div>
+            <div class="field-group" style="margin-bottom:0"><label class="field-label">Current</label>
+              <div class="chip-group" id="chips-current-mob">
+                <div class="chip" data-value="None">None</div>
+                <div class="chip" data-value="Light">Light</div>
+                <div class="chip" data-value="Strong">Strong</div>
+              </div>
+            </div>
+          </div>
+          <div class="field-group" style="margin-bottom:0;margin-top:13px"><label class="field-label">Crowd</label>
+            <div class="chip-group" id="chips-crowd-mob">
+              <div class="chip" data-value="Empty">Empty</div><div class="chip" data-value="Quiet">Quiet</div>
+              <div class="chip" data-value="Busy">Busy</div><div class="chip" data-value="Packed">Packed</div>
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="fsec-title">🏄 Setup</div>
+          <div class="field-group"><label class="field-label">Wetsuit</label>
+            <div class="seg-control" id="seg-suit-mob">
+              <div class="seg-option active" data-value="Trunks">Trunks</div>
+              <div class="seg-option" data-value="Spring">Spring</div>
+              <div class="seg-option" data-value="3/2">3/2</div>
+              <div class="seg-option" data-value="4/3">4/3</div>
+              <div class="seg-option" data-value="5/4">5/4</div>
+            </div>
+          </div>
+          <div class="field-group"><label class="field-label">Board</label>
+            <input class="field-input" id="f-board-mob" type="text" placeholder="6'2&quot; thruster, longboard…" autocomplete="off">
+          </div>
+          <div class="field-group"><label class="field-label">Session</label>
+            <div class="seg-control" id="seg-sessionType-mob">
+              <div class="seg-option active" data-value="Solo">Solo</div>
+              <div class="seg-option" data-value="With others">With others</div>
+            </div>
+          </div>
+          <div class="field-group hidden" id="field-withWho-mob" style="margin-bottom:0"><label class="field-label">Who with?</label>
+            <input class="field-input" id="f-withWho-mob" type="text" placeholder="Friends, crew…">
+          </div>
+        </div>
+        <div class="form-section">
+          <div class="fsec-title">⭐ Reflection</div>
+          <div class="field-group"><label class="field-label">Rating</label>
+            <div class="rating-row" id="rating-row-mob">
+              <div class="rating-btn" data-value="1">1</div><div class="rating-btn" data-value="2">2</div>
+              <div class="rating-btn" data-value="3">3</div><div class="rating-btn" data-value="4">4</div>
+              <div class="rating-btn" data-value="5">5</div><div class="rating-btn" data-value="6">6</div>
+              <div class="rating-btn" data-value="7">7</div><div class="rating-btn" data-value="8">8</div>
+              <div class="rating-btn" data-value="9">9</div><div class="rating-btn" data-value="10">10</div>
+            </div>
+          </div>
+          <div class="field-group" style="margin-bottom:0"><label class="field-label">Notes</label>
+            <textarea class="field-input" id="f-comments-mob" placeholder="How was it? Any memorable waves…"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="log-save-bar">
+        <button class="btn-primary" id="btn-mob-save">Save Session</button>
+      </div>
+    </div>
+
+    <!-- ── SESSIONS ── -->
+    <div class="screen" id="screen-sessions">
+      <!-- Mobile header only -->
+      <div class="screen-header">
+        <div style="min-width:44px"></div>
+        <h2>Sessions</h2>
+        <span id="sessions-count"></span>
+      </div>
+      <!-- Desktop: two-pane (no extra topbar — topbar lives inside list-pane header) -->
+      <div class="sess-list-pane">
+        <div class="sess-list-header">
+          <div class="sess-list-title">Sessions</div>
+          <span id="sess-count-dt"></span>
+        </div>
+        <div class="sess-list-scroll" id="sess-list-dt"></div>
+      </div>
+      <!-- Backdrop -->
+      <div class="sess-backdrop" id="sess-backdrop"></div>
+      <!-- Slide-over detail panel -->
+      <div class="sess-detail-pane" id="sess-detail-pane">
+        <div class="det-empty"><div class="det-empty-icon">🌊</div><div class="det-empty-text">Select a session</div></div>
+      </div>
+      <!-- Mobile list -->
+      <div class="screen-body" id="sessions-list-mob"></div>
+    </div>
+
+    <!-- ── DETAIL (mobile only screen) ── -->
+    <div class="screen" id="screen-detail">
+      <div class="screen-header">
+        <button class="hdr-btn" id="btn-det-back">← Back</button>
+        <h2>Session</h2>
+        <button class="hdr-btn danger right" id="btn-det-delete-hdr">Delete</button>
+      </div>
+      <div class="screen-body" id="detail-mob-content"></div>
+    </div>
+
+    <!-- ── STATS ── -->
+    <div class="screen" id="screen-stats">
+      <div class="topbar" style="display:none">
+        <div class="topbar-title">Stats</div>
+        <div class="topbar-meta" id="stats-meta"></div>
+        <div></div>
+      </div>
+      <div class="screen-header">
+        <div style="min-width:44px"></div>
+        <h2>Stats</h2>
+        <div style="min-width:44px"></div>
+      </div>
+      <div class="screen-body">
+        <div class="stats-grid" id="stats-content"></div>
+      </div>
+    </div>
+
+  </div><!-- /.screens-wrap -->
+
+  <!-- ════ BOTTOM NAV (mobile only) ════ -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-screen="home">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12L5 10M5 10L12 3L19 10M5 10V20C5 20.55 5.45 21 6 21H9M19 10L21 12M19 10V20C19 20.55 18.55 21 18 21H15M9 21V15C9 14.45 9.45 14 10 14H14C14.55 14 15 14.45 15 15V21M9 21H15" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span>Home</span>
+    </button>
+    <button class="nav-btn" data-screen="log">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9" stroke-linecap="round"/><path d="M12 8V16M8 12H16" stroke-linecap="round"/></svg></span>
+      <span>Log</span>
+    </button>
+    <button class="nav-btn" data-screen="sessions">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 6H20M4 12H20M4 18H13" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span>Sessions</span>
+    </button>
+    <button class="nav-btn" data-screen="stats">
+      <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 20V14M10 20V10M14 20V4M18 20V8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <span>Stats</span>
+    </button>
+  </nav>
+
+</div><!-- /#app -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── SEED ── */
+var SEED = [
+  {id:'s1',spot:'La Gravière, Hossegor',date:'2025-09-14',time:'07:30',hours:'2.5h',waveSize:'M-L',tide:'Low',swellDirection:'NW',windType:'Offshore',waterTemp:'19',waveShape:'Hollow',current:'Light',crowd:'Busy',suit:'Spring',sessionType:'Solo',withWho:'',board:"6'2\" thruster",rating:9,comments:"One of those rare mornings where everything aligns. Caught a long left that felt endless — proper Gravière magic."},
+  {id:'s2',spot:'Mundaka, Basque Country',date:'2025-10-03',time:'09:00',hours:'2h',waveSize:'L',tide:'Mid',swellDirection:'NW',windType:'Offshore',waterTemp:'17',waveShape:'Hollow',current:'Strong',crowd:'Packed',suit:'3/2',sessionType:'With others',withWho:'Javi & Lucas',board:"6'0\" thruster",rating:8,comments:"River mouth in full form. Intimidating crowd but managed to snag a couple of bombs on the inside."},
+  {id:'s3',spot:'Lacanau, France',date:'2025-08-20',time:'08:00',hours:'1.5h',waveSize:'M',tide:'Rising',swellDirection:'W',windType:'Cross-off',waterTemp:'21',waveShape:'Punchy',current:'Light',crowd:'Busy',suit:'Spring',sessionType:'With others',withWho:'Sarah',board:"6'4\" fish",rating:7,comments:"Decent beach break. The fish felt great in the mushier conditions. Sarah ripped it."},
+  {id:'s4',spot:'Supertubos, Peniche',date:'2025-11-05',time:'10:15',hours:'2h',waveSize:'M-L',tide:'Low',swellDirection:'W',windType:'Offshore',waterTemp:'16',waveShape:'Hollow',current:'None',crowd:'Quiet',suit:'3/2',sessionType:'Solo',withWho:'',board:"6'2\" thruster",rating:9,comments:"Off-season magic. Perfect barrels with almost no one out."},
+  {id:'s5',spot:'Fistral Beach, Newquay',date:'2025-07-12',time:'06:45',hours:'1h',waveSize:'S',tide:'High',swellDirection:'SW',windType:'Glassy',waterTemp:'14',waveShape:'Mushy',current:'None',crowd:'Empty',suit:'4/3',sessionType:'Solo',withWho:'',board:"7'6\" mini mal",rating:5,comments:"Small and slow but glassy at dawn. Good for footwork and trim."},
+  {id:'s6',spot:'Ericeira, Portugal',date:'2025-10-18',time:'08:30',hours:'2.5h',waveSize:'M',tide:'Mid',swellDirection:'NW',windType:'Offshore',waterTemp:'18',waveShape:'Punchy',current:'Light',crowd:'Quiet',suit:'3/2',sessionType:'With others',withWho:'Tom',board:"6'4\" fish",rating:8,comments:"Ribeira d'Ilhas firing on a clean swell. Tom got the wave of the day — still jealous about that right."},
+  {id:'s7',spot:'Bundoran, Ireland',date:'2025-06-05',time:'11:00',hours:'1.5h',waveSize:'L',tide:'Dropping',swellDirection:'NW',windType:'Cross-on',waterTemp:'12',waveShape:'Fat',current:'Light',crowd:'Quiet',suit:'5/4',sessionType:'Solo',withWho:'',board:"6'6\" step-up",rating:6,comments:"Choppy and properly cold. But the swell had real size and I found a rhythm."},
+  {id:'s8',spot:'Guidel, Brittany',date:'2025-08-04',time:'07:00',hours:'2h',waveSize:'S-M',tide:'Low',swellDirection:'SW',windType:'Offshore',waterTemp:'17',waveShape:'Punchy',current:'None',crowd:'Empty',suit:'3/2',sessionType:'With others',withWho:'The crew',board:"6'2\" thruster",rating:7,comments:"Hidden gem in south Brittany. Had the lineup to ourselves for a full hour."},
+  {id:'s9',spot:'Zarautz, Basque Country',date:'2025-09-28',time:'09:30',hours:'2h',waveSize:'M',tide:'Mid',swellDirection:'N',windType:'Cross-off',waterTemp:'18',waveShape:'Punchy',current:'None',crowd:'Busy',suit:'Spring',sessionType:'With others',withWho:'Marta',board:"6'4\" fish",rating:7,comments:"Fun town break. Long walls, ideal for the fish. Pintxos after = perfect Basque day."}
+];
+
+/* ── STATE ── */
+var sessions = [];
+var selectedRating = 0;
+var selectedSessionId = null;
+var mobDetailBackTarget = 'sessions';
+
+/* ── RESPONSIVE ── */
+function isDesktop() { return window.matchMedia('(min-width: 768px)').matches; }
+
+/* ── INIT ── */
+function init() {
+  var stored = localStorage.getItem('wavelog-sessions');
+  if (stored) { try { sessions = JSON.parse(stored); } catch(e) { sessions = SEED.slice(); } }
+  else { sessions = SEED.slice(); persist(); }
+
+  var dateStr = new Date().toLocaleString('en',{weekday:'long',day:'numeric',month:'long',year:'numeric'}).toUpperCase();
+  var els = ['sidebar-date','home-date-mob','home-topbar-meta'];
+  els.forEach(function(id){ var el=document.getElementById(id); if(el) el.textContent=dateStr; });
+
+  // Set today dates
+  ['f-date','f-date-mob'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=todayISO(); });
+
+  bindNav();
+  bindStaticBtns();
+  initChips();
+  initSegs();
+  initRating();
+
+  navigateTo('home');
+}
+
+function persist() { localStorage.setItem('wavelog-sessions', JSON.stringify(sessions)); }
+function todayISO() { return new Date().toISOString().split('T')[0]; }
+
+/* ── NAV ── */
+function bindNav() {
+  // All nav-btn elements (sidebar + bottom nav)
+  document.querySelectorAll('.nav-btn[data-screen]').forEach(function(btn) {
+    btn.addEventListener('click', function() { navigateTo(btn.dataset.screen); });
+  });
+}
+
+function navigateTo(id) {
+  // On mobile, 'detail' is its own screen; on desktop, it's a pane
+  if (id === 'detail' && isDesktop()) return;
+
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById('screen-'+id).classList.add('active');
+
+  // Sync all nav buttons
+  document.querySelectorAll('.nav-btn[data-screen]').forEach(function(n){ n.classList.remove('active'); });
+  document.querySelectorAll('.nav-btn[data-screen="'+id+'"]').forEach(function(n){ n.classList.add('active'); });
+  // Also handle 'sessions' being the parent of 'detail' on mobile
+  if (id==='detail') {
+    document.querySelectorAll('.nav-btn[data-screen="sessions"]').forEach(function(n){ n.classList.add('active'); });
+  }
+
+  if (id==='home')     renderHome();
+  if (id==='sessions') renderSessions();
+  if (id==='stats')    renderStats();
+}
+
+/* ── STATIC BUTTONS ── */
+function bindStaticBtns() {
+  // Home CTA
+  document.getElementById('btn-mob-home-log').addEventListener('click', function(){ navigateTo('log'); });
+  document.getElementById('btn-dt-home-log').addEventListener('click',  function(){ navigateTo('log'); });
+
+  // Log clear / save
+  document.getElementById('btn-mob-clear').addEventListener('click', resetForm);
+  document.getElementById('btn-dt-clear').addEventListener('click',  resetForm);
+  document.getElementById('btn-mob-save').addEventListener('click',  saveSession);
+  document.getElementById('btn-dt-save').addEventListener('click',   saveSession);
+  document.getElementById('btn-aside-save').addEventListener('click',saveSession);
+  var asideClear = document.getElementById('btn-aside-clear');
+  if (asideClear) asideClear.addEventListener('click', resetForm);
+
+  // Detail (mobile)
+  document.getElementById('btn-det-back').addEventListener('click', function(){ navigateTo(mobDetailBackTarget); });
+  document.getElementById('btn-det-delete-hdr').addEventListener('click', deleteMobDetail);
+}
+
+/* ── SIDEBAR STATS ── */
+function renderSidebarStats() {
+  var el = document.getElementById('sidebar-stats'); if(!el) return;
+  if (!sessions.length) { el.innerHTML=''; return; }
+  var rated = sessions.filter(function(s){ return s.rating; });
+  var avgR = rated.length ? (rated.reduce(function(a,b){ return a+b.rating; },0)/rated.length).toFixed(1) : '—';
+  var spotC={};
+  sessions.forEach(function(s){ if(s.spot) spotC[s.spot]=(spotC[s.spot]||0)+1; });
+  var topE = Object.entries(spotC).sort(function(a,b){ return b[1]-a[1]; })[0];
+  var topSpot = topE ? topE[0].split(',')[0] : '—';
+  el.innerHTML =
+    si(sessions.length,'Sessions') + si(avgR,'Avg rating') +
+    '<div class="strip-item"><span class="strip-lbl">Top spot</span><span class="strip-val" style="font-size:12px;max-width:130px;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(topSpot)+'</span></div>';
+}
+function si(v,l){ return '<div class="strip-item"><span class="strip-lbl">'+l+'</span><span class="strip-val">'+v+'</span></div>'; }
+
+/* ── HOME ── */
+function renderHome() {
+  renderSidebarStats();
+  var dt = isDesktop();
+
+  if (!sessions.length) {
+    var c = dt ? document.getElementById('home-content') : document.getElementById('home-content');
+    c.innerHTML = '<div class="empty-state"><div class="empty-icon">🌊</div><div class="empty-title">No sessions yet</div><div class="empty-sub">Your logbook is empty.</div><button class="btn-primary empty-cta" id="btn-empty-home">+ Log a Session</button></div>';
+    document.getElementById('btn-empty-home').addEventListener('click', function(){ navigateTo('log'); });
+    if (dt) { document.getElementById('desk-hero').style.display='none'; document.getElementById('desk-home-grid').style.display='none'; }
+    return;
+  }
+
+  var sorted = sessions.slice().sort(function(a,b){ return new Date(b.date)-new Date(a.date); });
+  var rated = sessions.filter(function(s){ return s.rating; });
+  var avgR = rated.length ? (rated.reduce(function(a,b){ return a+b.rating; },0)/rated.length).toFixed(1) : '—';
+  var hMap={'0.5h':0.5,'1h':1,'1.5h':1.5,'2h':2,'2.5h':2.5,'3h':3,'3h+':3.5};
+  var totH = sessions.reduce(function(a,s){ return a+(hMap[s.hours]||0); },0);
+  var spotC={};
+  sessions.forEach(function(s){ if(s.spot) spotC[s.spot]=(spotC[s.spot]||0)+1; });
+  var topE = Object.entries(spotC).sort(function(a,b){ return b[1]-a[1]; })[0];
+  var topSpot = topE ? topE[0].split(',')[0] : '—';
+
+  if (dt) {
+    // Desktop hero
+    var hero = document.getElementById('desk-hero');
+    hero.style.display = '';
+    hero.innerHTML = '<div class="home-hero-greeting">Your surf logbook</div>'
+      + '<div class="home-hero-title">'+sessions.length+' session'+(sessions.length!==1?'s':'')+' in the water</div>'
+      + '<div class="home-hero-stats">'
+      + hhs(avgR,'Avg rating') + hhs(totH>0?totH+'h':'—','Hours surfed') + hhs(esc(topSpot),'Top spot')
+      + '</div>';
+
+    // Desktop grid
+    var grid = document.getElementById('desk-home-grid');
+    grid.style.display = '';
+    grid.innerHTML = '';
+    sorted.slice(0,6).forEach(function(s) {
+      var d=parseDate(s.date);
+      var mon=d.toLocaleString('en',{month:'short'}).toUpperCase();
+      var div=document.createElement('div');
+      div.className='card card-tap';
+      div.setAttribute('data-id',s.id);
+      div.innerHTML='<div class="session-card">'
+        +'<div class="s-date-block"><div class="s-date-month">'+mon+'</div><div class="s-date-day">'+d.getDate()+'</div></div>'
+        +'<div class="s-divider"></div>'
+        +'<div class="s-info"><div class="s-spot">'+esc(s.spot||'—')+'</div>'
+        +'<div class="s-meta">'+(s.waveSize?'<span class="badge">'+esc(s.waveSize)+'</span>':'')+(s.windType?'<span class="badge badge-sand">'+esc(s.windType)+'</span>':'')+(s.hours?'<span>'+esc(s.hours)+'</span>':'')+'</div>'
+        +(s.board?'<div class="s-board">'+esc(s.board)+'</div>':'')+'</div>'
+        +(s.rating?'<div class="rating-circle" style="background:'+ratingColor(s.rating)+'">'+s.rating+'</div>':'')
+        +'</div>';
+      div.addEventListener('click', function(){
+        selectedSessionId=s.id; navigateTo('sessions');
+        setTimeout(function(){ openDetailDesktop(s.id); },50);
+      });
+      grid.appendChild(div);
+    });
+
+    document.getElementById('home-content').innerHTML='';
+  } else {
+    // Mobile: mini stats + recent sessions
+    var strip = document.getElementById('mob-stats-strip');
+    strip.innerHTML = '<div class="mini-stats" style="margin-bottom:0">'
+      +'<div class="msc"><div class="msc-val">'+sessions.length+'</div><div class="msc-lbl">Sessions</div></div>'
+      +'<div class="msc"><div class="msc-val">'+avgR+'</div><div class="msc-lbl">Avg rating</div></div>'
+      +'<div class="msc"><div class="msc-val" style="font-size:'+(topSpot.length>6?'14':'20')+'px;line-height:1.2">'+esc(topSpot)+'</div><div class="msc-lbl">Top spot</div></div>'
+      +'</div>';
+
+    var c = document.getElementById('home-content');
+    var html='<div class="section-label" style="margin-top:20px">Last session</div>'+sessionCardMob(sorted[0],'home');
+    var recent=sorted.slice(1,4);
+    if(recent.length){ html+='<div class="section-label" style="margin-top:18px">Recent</div>'; recent.forEach(function(s){ html+=sessionCardMob(s,'home'); }); }
+    c.innerHTML=html;
+    bindMobCards(c);
+  }
+}
+function hhs(v,l){ return '<div><div class="hhs-val">'+v+'</div><div class="hhs-lbl">'+l+'</div></div>'; }
+
+/* ── SESSION CARD (mobile) ── */
+function sessionCardMob(s, back) {
+  var d=parseDate(s.date);
+  var mon=d.toLocaleString('en',{month:'short'}).toUpperCase();
+  return '<div class="card card-tap" data-id="'+esc(s.id)+'" data-back="'+(back||'sessions')+'">'
+    +'<div class="session-card">'
+    +'<div class="s-date-block"><div class="s-date-month">'+mon+'</div><div class="s-date-day">'+d.getDate()+'</div></div>'
+    +'<div class="s-divider"></div>'
+    +'<div class="s-info"><div class="s-spot">'+esc(s.spot||'—')+'</div>'
+    +'<div class="s-meta">'+(s.waveSize?'<span class="badge">'+esc(s.waveSize)+'</span>':'')+(s.windType?'<span class="badge badge-sand">'+esc(s.windType)+'</span>':'')+(s.hours?'<span>'+esc(s.hours)+'</span>':'')+'</div>'
+    +(s.board?'<div class="s-board">'+esc(s.board)+'</div>':'')+'</div>'
+    +(s.rating?'<div class="rating-circle" style="background:'+ratingColor(s.rating)+'">'+s.rating+'</div>':'')
+    +'</div></div>';
+}
+function bindMobCards(container) {
+  container.querySelectorAll('.card-tap[data-id]').forEach(function(card){
+    card.addEventListener('click', function(){
+      selectedSessionId = card.dataset.id;
+      mobDetailBackTarget = card.dataset.back||'sessions';
+      openDetailMobile(selectedSessionId);
+    });
+  });
+}
+
+/* ── SESSIONS ── */
+function renderSessions() {
+  renderSidebarStats();
+  var dt = isDesktop();
+  var cnt = sessions.length+' log'+(sessions.length!==1?'s':'');
+
+  if (dt) {
+    var cntEl = document.getElementById('sess-count-dt');
+  if(cntEl) cntEl.textContent = sessions.length + (sessions.length===1?' log':' logs');
+    renderSessionsListDesktop();
+    if(selectedSessionId) {
+    openDetailDesktop(selectedSessionId);
+  } else { document.getElementById('sess-detail-pane').innerHTML='<div class="det-empty"><div class="det-empty-icon">🌊</div><div class="det-empty-text">Select a session</div></div>'; }
+  } else {
+    var cEl = document.getElementById('sessions-count'); if(cEl) cEl.textContent=cnt;
+    renderSessionsListMobile();
+  }
+}
+
+function renderSessionsListDesktop() {
+  var list = document.getElementById('sess-list-dt');
+  if (!sessions.length) {
+    list.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No sessions yet</div><div class="empty-sub">Start logging.</div><button class="btn-primary empty-cta btn-sm-p" id="btn-empty-dt-sess">+ Log a Session</button></div>';
+    document.getElementById('btn-empty-dt-sess').addEventListener('click',function(){ navigateTo('log'); });
+    return;
+  }
+  var sorted=sessions.slice().sort(function(a,b){ return new Date(b.date)-new Date(a.date); });
+  list.innerHTML=sorted.map(function(s){
+    var d=parseDate(s.date);
+    var mon=d.toLocaleString('en',{month:'short'}).toUpperCase();
+    return '<div class="sess-row'+(selectedSessionId===s.id?' sel':'')+'" data-id="'+esc(s.id)+'">'
+      +'<div class="sess-row-date"><div class="sess-row-month">'+mon+'</div><div class="sess-row-day">'+d.getDate()+'</div></div>'
+      +'<div class="sess-row-div"></div>'
+      +'<div class="sess-row-info">'
+      +'<div class="sess-row-spot">'+esc(s.spot||'—')+'</div>'
+      +'<div class="sess-row-meta">'
+      +(s.waveSize?'<span class="badge" style="font-size:10px;padding:2px 7px">'+esc(s.waveSize)+'</span>':'')
+      +(s.windType?'<span class="badge badge-sand" style="font-size:10px;padding:2px 7px">'+esc(s.windType)+'</span>':'')
+      +(s.hours?'<span>'+esc(s.hours)+'</span>':'')
+      +(s.tide?'<span>'+esc(s.tide)+' tide</span>':'')
+      +'</div>'
+      +(s.board?'<div class="sess-row-board">'+esc(s.board)+'</div>':'')
+      +'</div>'
+      +(s.rating?'<div class="rc-sm" style="background:'+ratingColor(s.rating)+'">'+s.rating+'</div>':'')
+      +'</div>';
+  }).join('');
+  list.querySelectorAll('.sess-row').forEach(function(row){
+    row.addEventListener('click',function(){ openDetailDesktop(row.dataset.id); });
+  });
+}
+
+function renderSessionsListMobile() {
+  var list = document.getElementById('sessions-list-mob');
+  if (!sessions.length) {
+    list.innerHTML='<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">No sessions yet</div><div class="empty-sub">Your logbook is empty.</div><button class="btn-primary empty-cta" id="btn-empty-mob-sess">+ Log a Session</button></div>';
+    document.getElementById('btn-empty-mob-sess').addEventListener('click',function(){ navigateTo('log'); });
+    return;
+  }
+  var sorted=sessions.slice().sort(function(a,b){ return new Date(b.date)-new Date(a.date); });
+  list.innerHTML=sorted.map(function(s){ return sessionCardMob(s,'sessions'); }).join('');
+  bindMobCards(list);
+}
+
+/* ── DETAIL DESKTOP ── */
+function openDetailDesktop(id) {
+  selectedSessionId=id;
+  document.querySelectorAll('.sess-row').forEach(function(r){ r.classList.toggle('sel', r.dataset.id===id); });
+  var s=sessions.find(function(s){ return s.id===id; });
+  if(!s){ return; }
+  var d=parseDate(s.date);
+  var dateStr=d.toLocaleString('en',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var condF=[['Wave Size',s.waveSize],['Tide',s.tide],['Swell',s.swellDirection],['Wind',s.windType],['Shape',s.waveShape],['Current',s.current],['Crowd',s.crowd],['Water Temp',s.waterTemp?s.waterTemp+'°C':'']].filter(function(f){ return f[1]; });
+  var setupF=[['Suit',s.suit],['Board',s.board],['Session',s.sessionType],['With',s.withWho],['Duration',s.hours]].filter(function(f){ return f[1]; });
+  var html='<div class="det-topbar">'
+    +'<div class="det-topbar-left"><button class="det-close-btn" id="btn-dt-close">✕</button>'
+    +'<div class="det-topbar-title">Session detail</div></div>'
+    +'<div class="det-topbar-actions">'
+    +'<button class="btn-edit-sm" id="btn-dt-edit">Edit</button>'
+    +'<button class="btn-danger-sm" id="btn-dt-delete">Delete</button>'
+    +'</div></div>'
+    +'<div class="det-inner">'
+    +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:6px">'
+    +'<div><div class="det-spot">'+esc(s.spot||'Unknown spot')+'</div><div class="det-meta">'+dateStr+(s.time?' · '+s.time:'')+(s.hours?' · '+s.hours:'')+'</div></div>'
+    +(s.rating?'<div class="det-rating-lg" style="background:'+ratingColor(s.rating)+'">'+s.rating+'</div>':'')
+    +'</div>';
+  var badges=[s.waveSize,s.windType,s.waveShape,s.tide].filter(Boolean);
+  if(badges.length){ html+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:18px">'+badges.map(function(v,i){ return '<span class="badge'+(i===1?' badge-sand':'')+'" style="font-size:11px;padding:3px 8px">'+esc(v)+'</span>'; }).join('')+'</div>'; }
+  if(condF.length){ html+='<div style="margin-bottom:18px"><div class="det-sec-title">Conditions</div><div class="det-grid">'+condF.map(function(f){ return '<div><div class="det-fl">'+f[0]+'</div><div class="det-fv">'+esc(f[1])+'</div></div>'; }).join('')+'</div></div>'; }
+  if(setupF.length){ html+='<div style="margin-bottom:18px"><div class="det-sec-title">Setup</div><div class="det-grid">'+setupF.map(function(f){ return '<div><div class="det-fl">'+f[0]+'</div><div class="det-fv">'+esc(f[1])+'</div></div>'; }).join('')+'</div></div>'; }
+  if(s.comments){ html+='<div><div class="det-sec-title">Notes</div><div class="det-notes">"'+esc(s.comments)+'"</div></div>'; }
+  html+='</div>';
+
+  var pane = document.getElementById('sess-detail-pane');
+  var backdrop = document.getElementById('sess-backdrop');
+  pane.classList.remove('open');
+  pane.innerHTML = html;
+  requestAnimationFrame(function(){
+    pane.classList.add('open');
+    if(backdrop) backdrop.classList.add('show');
+  });
+
+  function closePanel() {
+    pane.classList.remove('open');
+    if(backdrop) backdrop.classList.remove('show');
+    document.querySelectorAll('.sess-row').forEach(function(r){ r.classList.remove('sel'); });
+    selectedSessionId = null;
+  }
+
+  document.getElementById('btn-dt-close').addEventListener('click', closePanel);
+  if(backdrop) backdrop.addEventListener('click', closePanel);
+
+  document.getElementById('btn-dt-edit').addEventListener('click', function(){ editSessionDesktop(id); });
+  document.getElementById('btn-dt-delete').addEventListener('click',function(){
+    if(!confirm('Delete this session?')) return;
+    sessions=sessions.filter(function(s){ return s.id!==selectedSessionId; });
+    persist(); selectedSessionId=null;
+    renderSessionsListDesktop();
+    document.getElementById('sess-detail-pane').innerHTML='<div class="det-empty"><div class="det-empty-icon">🌊</div><div class="det-empty-text">Select a session</div></div>';
+    renderSidebarStats(); showToast('Session deleted');
+    pane.classList.remove('open');
+    var bd = document.getElementById('sess-backdrop'); if(bd) bd.classList.remove('show');
+  });
+}
+
+/* ── EDIT SESSION (desktop) ── */
+function editSessionDesktop(id) {
+  var s = sessions.find(function(s){ return s.id===id; }); if(!s) return;
+  navigateTo('log');
+  // Pre-fill all desktop fields
+  setTimeout(function(){
+    var sp=document.getElementById('f-spot'); if(sp) sp.value=s.spot||'';
+    var fd=document.getElementById('f-date'); if(fd) fd.value=s.date||'';
+    var ft=document.getElementById('f-time'); if(ft) ft.value=s.time||'';
+    var fw=document.getElementById('f-waterTemp'); if(fw) fw.value=s.waterTemp||'';
+    var fb=document.getElementById('f-board'); if(fb) fb.value=s.board||'';
+    var fwh=document.getElementById('f-withWho'); if(fwh) fwh.value=s.withWho||'';
+    var fc=document.getElementById('f-comments'); if(fc) fc.value=s.comments||'';
+    // Chips
+    setChip('chips-hours-dt', s.hours);
+    setChip('chips-waveSize-dt', s.waveSize);
+    setChip('chips-tide-dt', s.tide);
+    setChip('chips-swellDirection-dt', s.swellDirection);
+    setChip('chips-windType-dt', s.windType);
+    setChip('chips-waveShape-dt', s.waveShape);
+    setChip('chips-current-dt', s.current);
+    setChip('chips-crowd-dt', s.crowd);
+    // Segs
+    setSeg('seg-suit-dt', s.suit);
+    setSeg('seg-sessionType-dt', s.sessionType);
+    if(s.sessionType==='With others') document.getElementById('field-withWho-dt').classList.remove('hidden');
+    // Rating
+    if(s.rating){
+      selectedRating=s.rating;
+      document.querySelectorAll('.rating-btn').forEach(function(b){ b.classList.toggle('active', parseInt(b.dataset.value)===s.rating); });
+    }
+    // Remove old session so saving creates updated one
+    sessions = sessions.filter(function(x){ return x.id!==id; });
+    persist();
+    showToast('Editing — save to update');
+  }, 80);
+}
+function setChip(gid, val){
+  if(!val) return;
+  var g=document.getElementById(gid); if(!g) return;
+  g.querySelectorAll('.chip').forEach(function(c){ c.classList.toggle('active', c.dataset.value===val); });
+}
+function setSeg(cid, val){
+  if(!val) return;
+  var c=document.getElementById(cid); if(!c) return;
+  c.querySelectorAll('.seg-option').forEach(function(o){ o.classList.toggle('active', o.dataset.value===val); });
+}
+
+/* ── DETAIL MOBILE ── */
+function openDetailMobile(id) {
+  var s=sessions.find(function(s){ return s.id===id; }); if(!s) return;
+  var d=parseDate(s.date);
+  var dateStr=d.toLocaleString('en',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var condF=[['Wave Size',s.waveSize],['Tide',s.tide],['Swell',s.swellDirection],['Wind',s.windType],['Shape',s.waveShape],['Current',s.current],['Crowd',s.crowd],['Water Temp',s.waterTemp?s.waterTemp+'°C':'']].filter(function(f){ return f[1]; });
+  var setupF=[['Suit',s.suit],['Board',s.board],['Session',s.sessionType],['With',s.withWho],['Duration',s.hours]].filter(function(f){ return f[1]; });
+  var html='<div class="card"><div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:5px">'
+    +'<div class="det-spot">'+esc(s.spot||'Unknown spot')+'</div>'
+    +(s.rating?'<div class="det-rating-lg" style="background:'+ratingColor(s.rating)+'">'+s.rating+'</div>':'')
+    +'</div><div class="det-meta">'+dateStr+(s.time?' · '+s.time:'')+(s.hours?' · '+s.hours:'')+'</div></div>';
+  if(condF.length){ html+='<div class="card"><div class="det-sec-title">Conditions</div><div class="det-grid">'+condF.map(function(f){ return '<div><div class="det-fl">'+f[0]+'</div><div class="det-fv">'+esc(f[1])+'</div></div>'; }).join('')+'</div></div>'; }
+  if(setupF.length){ html+='<div class="card"><div class="det-sec-title">Setup</div><div class="det-grid">'+setupF.map(function(f){ return '<div><div class="det-fl">'+f[0]+'</div><div class="det-fv">'+esc(f[1])+'</div></div>'; }).join('')+'</div></div>'; }
+  if(s.comments){ html+='<div class="card"><div class="det-sec-title">Notes</div><div class="det-notes">"'+esc(s.comments)+'"</div></div>'; }
+  html+='<div class="delete-zone"><button class="btn-danger" id="btn-mob-delete-inline">Delete this session</button></div>';
+  document.getElementById('detail-mob-content').innerHTML=html;
+  document.getElementById('btn-mob-delete-inline').addEventListener('click',deleteMobDetail);
+  navigateTo('detail');
+}
+
+function deleteMobDetail(){
+  if(!confirm('Delete this session?')) return;
+  sessions=sessions.filter(function(s){ return s.id!==selectedSessionId; });
+  persist(); showToast('Session deleted');
+  selectedSessionId=null;
+  navigateTo(mobDetailBackTarget);
+}
+
+/* ── STATS ── */
+function renderStats() {
+  renderSidebarStats();
+  var c = document.getElementById('stats-content');
+  if(!sessions.length){ c.innerHTML='<div class="stc w2" style="grid-column:span 4"><div class="empty-state" style="padding:40px"><div class="empty-icon">📊</div><div class="empty-title">No data yet</div><div class="empty-sub">Log some sessions first.</div></div></div>'; return; }
+  var smEl=document.getElementById('stats-meta'); if(smEl) smEl.textContent=sessions.length+' sessions analysed';
+  var rated=sessions.filter(function(s){ return s.rating; });
+  var avgR=rated.length?(rated.reduce(function(a,b){ return a+b.rating; },0)/rated.length).toFixed(1):'—';
+  var hMap={'0.5h':0.5,'1h':1,'1.5h':1.5,'2h':2,'2.5h':2.5,'3h':3,'3h+':3.5};
+  var totH=sessions.reduce(function(a,s){ return a+(hMap[s.hours]||0); },0);
+  var spotC={},sizeC={},windC={};
+  sessions.forEach(function(s){
+    if(s.spot) spotC[s.spot]=(spotC[s.spot]||0)+1;
+    if(s.waveSize) sizeC[s.waveSize]=(sizeC[s.waveSize]||0)+1;
+    if(s.windType) windC[s.windType]=(windC[s.windType]||0)+1;
+  });
+  var topSpotE=Object.entries(spotC).sort(function(a,b){ return b[1]-a[1]; })[0];
+  var topSize=Object.entries(sizeC).sort(function(a,b){ return b[1]-a[1]; })[0];
+  var topWind=Object.entries(windC).sort(function(a,b){ return b[1]-a[1]; })[0];
+  var boardR={},boardN={};
+  sessions.forEach(function(s){ if(s.board&&s.rating){ boardR[s.board]=(boardR[s.board]||0)+s.rating; boardN[s.board]=(boardN[s.board]||0)+1; } });
+  var bestBoard=Object.entries(boardR).map(function(e){ return [e[0],e[1]/boardN[e[0]]]; }).sort(function(a,b){ return b[1]-a[1]; })[0];
+  var cMap={Empty:1,Quiet:2,Busy:3,Packed:4},cRev={1:'Empty',2:'Quiet',3:'Busy',4:'Packed'};
+  var cS=sessions.filter(function(s){ return s.crowd&&cMap[s.crowd]; });
+  var avgCN=cS.length?Math.round(cS.reduce(function(a,b){ return a+cMap[b.crowd]; },0)/cS.length):0;
+  var uniq=new Set(sessions.map(function(s){ return s.spot; }).filter(Boolean)).size;
+  c.innerHTML=
+    sc(sessions.length,'Total Sessions')+sc(avgR,'Avg Rating')+
+    sc(totH>0?totH+'h':'—','Hours Surfed')+sc(uniq,'Spots Surfed')+
+    sc(topSpotE?esc(topSpotE[0]):'—','Most Surfed Spot'+(topSpotE?' · '+topSpotE[1]+'x':''),true,'md')+
+    sc(bestBoard?esc(bestBoard[0]):'—','Best-Rated Board'+(bestBoard?' · '+bestBoard[1].toFixed(1)+' avg':''),true,'md')+
+    sc(topSize?esc(topSize[0]):'—','Fav Wave Size')+sc(cRev[avgCN]||'—','Avg Crowd',false,'md')+
+    sc(topWind?esc(topWind[0]):'—','Fav Wind',false,'md')+
+    sc(rated.length?rated.slice().sort(function(a,b){ return b.rating-a.rating; })[0].spot:'—','Best Session',true,'md');
+}
+function sc(v,l,w,sz){
+  return '<div class="stc'+(w?' w2':'')+'">'
+    +'<div class="stc-val'+(sz?' '+sz:'')+'">'+v+'</div>'
+    +'<div class="stc-lbl">'+l+'</div></div>';
+}
+
+/* ── FORM ── */
+function initChips() {
+  document.querySelectorAll('.chip-group').forEach(function(g){
+    g.querySelectorAll('.chip').forEach(function(chip){
+      chip.addEventListener('click',function(){
+        g.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('active'); });
+        chip.classList.add('active');
+      });
+    });
+  });
+}
+
+function initSegs() {
+  document.querySelectorAll('.seg-control').forEach(function(ctrl){
+    ctrl.querySelectorAll('.seg-option').forEach(function(opt){
+      opt.addEventListener('click',function(){
+        ctrl.querySelectorAll('.seg-option').forEach(function(o){ o.classList.remove('active'); });
+        opt.classList.add('active');
+        var ww = ctrl.id==='seg-sessionType-mob' ? 'field-withWho-mob' : ctrl.id==='seg-sessionType-dt' ? 'field-withWho-dt' : null;
+        if(ww){ document.getElementById(ww).classList.toggle('hidden', opt.dataset.value!=='With others'); }
+      });
+    });
+  });
+}
+
+function initRating() {
+  ['rating-row-mob','rating-row-dt'].forEach(function(rowId){
+    var row=document.getElementById(rowId); if(!row) return;
+    row.querySelectorAll('.rating-btn').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        selectedRating=parseInt(btn.dataset.value);
+        // sync both rating rows
+        document.querySelectorAll('.rating-btn').forEach(function(b){ b.classList.remove('active'); });
+        document.querySelectorAll('.rating-btn[data-value="'+btn.dataset.value+'"]').forEach(function(b){ b.classList.add('active'); });
+      });
+    });
+  });
+}
+
+/* ── GET FORM VALUES ── */
+function fv(dt,mob){ var el=document.getElementById(isDesktop()?dt:mob); return el?el.value.trim():''; }
+function chipVal(dtId,mobId){ var id=isDesktop()?dtId:mobId; var el=document.querySelector('#'+id+' .chip.active'); return el?el.dataset.value:''; }
+function segVal(dtId,mobId){ var id=isDesktop()?dtId:mobId; var el=document.querySelector('#'+id+' .seg-option.active'); return el?el.dataset.value:''; }
+
+function saveSession() {
+  var spot=fv('f-spot','f-spot-mob');
+  if(!spot){ showToast('Please enter a spot name'); var el=document.getElementById(isDesktop()?'f-spot':'f-spot-mob'); if(el) el.focus(); return; }
+  sessions.unshift({
+    id:'s'+Date.now(), spot:spot,
+    date:fv('f-date','f-date-mob')||todayISO(),
+    time:fv('f-time','f-time-mob'),
+    hours:chipVal('chips-hours-dt','chips-hours-mob'),
+    waveSize:chipVal('chips-waveSize-dt','chips-waveSize-mob'),
+    tide:chipVal('chips-tide-dt','chips-tide-mob'),
+    swellDirection:chipVal('chips-swellDirection-dt','chips-swellDirection-mob'),
+    windType:chipVal('chips-windType-dt','chips-windType-mob'),
+    waterTemp:fv('f-waterTemp','f-waterTemp-mob'),
+    waveShape:chipVal('chips-waveShape-dt','chips-waveShape-mob'),
+    current:chipVal('chips-current-dt','chips-current-mob'),
+    crowd:chipVal('chips-crowd-dt','chips-crowd-mob'),
+    suit:segVal('seg-suit-dt','seg-suit-mob'),
+    sessionType:segVal('seg-sessionType-dt','seg-sessionType-mob'),
+    withWho:fv('f-withWho','f-withWho-mob'),
+    board:fv('f-board','f-board-mob'),
+    rating:selectedRating||null,
+    comments:fv('f-comments','f-comments-mob')
+  });
+  persist(); showToast('Session saved ✓');
+  setTimeout(function(){ resetForm(); navigateTo('home'); },350);
+}
+
+function resetForm() {
+  ['f-spot','f-spot-mob','f-waterTemp','f-waterTemp-mob','f-board','f-board-mob',
+   'f-withWho','f-withWho-mob','f-comments','f-comments-mob'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  ['f-date','f-date-mob'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=todayISO(); });
+  ['f-time','f-time-mob'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  document.querySelectorAll('.chip').forEach(function(c){ c.classList.remove('active'); });
+  document.querySelectorAll('.seg-control').forEach(function(ctrl){
+    ctrl.querySelectorAll('.seg-option').forEach(function(o,i){ o.classList.toggle('active',i===0); });
+  });
+  ['field-withWho-dt','field-withWho-mob'].forEach(function(id){ var el=document.getElementById(id); if(el) el.classList.add('hidden'); });
+  selectedRating=0;
+  document.querySelectorAll('.rating-btn').forEach(function(b){ b.classList.remove('active'); });
+}
+
+/* ── HELPERS ── */
+function parseDate(str){ var p=str.split('-').map(Number); return new Date(p[0],p[1]-1,p[2]); }
+function ratingColor(r){ if(!r) return 'var(--ink-3)'; if(r>=8) return 'var(--ocean)'; if(r>=6) return 'var(--ocean-2)'; return 'var(--sand)'; }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+var _tt;
+function showToast(msg){ var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(_tt); _tt=setTimeout(function(){ t.classList.remove('show'); },2200); }
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

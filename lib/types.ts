@@ -1,0 +1,23 @@
+export type SessionRecord = {
+  id: string;
+  user_id: string;
+  spot: string;
+  date: string;
+  time: string | null;
+  hours: string | null;
+  wave_size: string | null;
+  tide: string | null;
+  swell_direction: string | null;
+  wind_type: string | null;
+  water_temp: number | null;
+  wave_shape: string | null;
+  current: string | null;
+  crowd: string | null;
+  suit: string | null;
+  session_type: string | null;
+  with_who: string | null;
+  board: string | null;
+  rating: number | null;
+  comments: string | null;
+  created_at: string;
+};
