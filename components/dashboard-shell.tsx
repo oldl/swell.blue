@@ -55,7 +55,7 @@ export function DashboardShell({
 
   function topbarMeta() {
     if (activeScreen === "sessions") return `${sessions.length} logs`;
-    if (activeScreen === "stats") return "Live from Supabase";
+    if (activeScreen === "stats") return `${sessions.length} sessions`;
     return userEmail;
   }
 
@@ -108,28 +108,7 @@ export function DashboardShell({
           </div>
         </div>
 
-          <section className={activeScreen === "overview" ? "screen-section-ui" : "screen-section-ui hidden-screen"}>
-          <section className="dashboard-hero panel">
-            <div className="dashboard-hero-copy">
-              <div className="eyebrow">Your surf logbook</div>
-              <h1 className="dashboard-headline">Chaque session devient une page de carnet.</h1>
-              <p className="lead" style={{ marginBottom: 0 }}>
-                Ton logbook garde maintenant tes spots, tes conditions et tes notes dans une vraie app
-                multi-appareils. L’idée est de retrouver le côté journal intime du prototype, sans perdre la structure.
-              </p>
-            </div>
-            <div className="dashboard-hero-side">
-              <div className="hero-note">
-                <div className="hero-note-label">Dernière mise à l’eau</div>
-                <div className="hero-note-value">{latestSpot}</div>
-              </div>
-              <div className="hero-note">
-                <div className="hero-note-label">Spots explorés</div>
-                <div className="hero-note-value">{uniqueSpots || "—"}</div>
-              </div>
-            </div>
-          </section>
-
+        <section className={activeScreen === "overview" ? "screen-section-ui" : "screen-section-ui hidden-screen"}>
             <div className="stats-grid-ui">
               <div className="stc-ui">
                 <div className="stc-val-ui">{sessions.length}</div>
@@ -166,7 +145,7 @@ export function DashboardShell({
         </section>
 
         <section className={activeScreen === "sessions" ? "screen-section-ui" : "screen-section-ui hidden-screen"}>
-          {errorMessage ? <div className="error">Lecture Supabase impossible pour le moment: {errorMessage}</div> : null}
+          {errorMessage ? <div className="error">Impossible de charger les sessions pour le moment.</div> : null}
           {sessions.length ? (
             <SessionsExplorer sessions={sessions} />
           ) : (

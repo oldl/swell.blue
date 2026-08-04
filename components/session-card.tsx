@@ -106,7 +106,7 @@ export function SessionCard({ session }: Props) {
     const { error: deleteError } = await supabase.from("sessions").delete().eq("id", session.id);
 
     if (deleteError) {
-      setError(deleteError.message);
+      setError("Impossible de supprimer la session pour le moment.");
       return;
     }
 
@@ -148,7 +148,7 @@ export function SessionCard({ session }: Props) {
       .eq("id", session.id);
 
     if (updateError) {
-      setError(updateError.message);
+      setError("Impossible de modifier la session pour le moment.");
       return;
     }
 

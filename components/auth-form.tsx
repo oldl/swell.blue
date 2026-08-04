@@ -39,7 +39,7 @@ export function AuthForm({ mode, message }: Props) {
       });
 
       if (loginError) {
-        setError(loginError.message);
+        setError("Connexion impossible. Vérifie ton email et ton mot de passe.");
         return;
       }
     } else {
@@ -55,7 +55,7 @@ export function AuthForm({ mode, message }: Props) {
       });
 
       if (signUpError) {
-        setError(signUpError.message);
+        setError("Impossible de créer le compte. Vérifie les informations saisies.");
         return;
       }
 
@@ -74,7 +74,7 @@ export function AuthForm({ mode, message }: Props) {
 
   return (
     <div className="auth-card">
-      <div className="eyebrow">Wave Log · v1.0.0</div>
+      <div className="eyebrow">Wave Log</div>
       <h1>{mode === "login" ? "Connexion" : "Créer un compte"}</h1>
       <p className="muted">
         {mode === "login"

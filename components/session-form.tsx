@@ -202,7 +202,7 @@ export function SessionForm({ userId }: Props) {
     const { error: insertError } = await supabase.from("sessions").insert(payload);
 
     if (insertError) {
-      setError(insertError.message);
+      setError("Impossible d’enregistrer la session pour le moment.");
       return;
     }
 
@@ -219,15 +219,8 @@ export function SessionForm({ userId }: Props) {
         <div>
           <div className="eyebrow">Nouvelle session</div>
           <h2 style={{ margin: "10px 0 8px", fontSize: "36px", lineHeight: 1.02 }}>
-            Ecrire une entree de carnet
+            Enregistrer une session
           </h2>
-          <p className="muted" style={{ marginBottom: 0 }}>
-            On recolle maintenant beaucoup plus au layout du prototype original.
-          </p>
-        </div>
-        <div className="form-hero-badge">
-          <div className="form-hero-badge-label">Mode</div>
-          <div className="form-hero-badge-value">Wave Log</div>
         </div>
       </div>
 

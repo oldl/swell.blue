@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Wave Log",
-  description: "Surf journal with authentication powered by Next.js and Supabase."
+  description: "Ton journal de sessions de surf."
 };
 
 export default function RootLayout({

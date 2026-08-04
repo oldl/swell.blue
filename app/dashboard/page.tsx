@@ -13,14 +13,11 @@ export default async function DashboardPage() {
       <main className="page">
         <div className="shell">
           <section className="panel">
-            <div className="eyebrow">Supabase manquant</div>
+            <div className="eyebrow">Service indisponible</div>
             <h1 style={{ margin: "10px 0 8px", fontSize: "44px", lineHeight: 1 }}>
-              Le dashboard attend encore la config.
+              Impossible d&apos;ouvrir ton journal.
             </h1>
-            <p>
-              Ajoute `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` dans `.env.local`,
-              puis recharge l&apos;app.
-            </p>
+            <p>Réessaie dans quelques instants.</p>
           </section>
         </div>
       </main>

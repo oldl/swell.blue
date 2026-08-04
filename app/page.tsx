@@ -19,11 +19,10 @@ export default async function HomePage() {
     <main className="page">
       <div className="shell stack">
         <section className="hero-card">
-          <div className="eyebrow">Wave Log · Next.js + Supabase</div>
-          <h1 className="headline">Ton carnet de surf devient une vraie app.</h1>
+          <div className="eyebrow">Wave Log</div>
+          <h1 className="headline">Ton journal de surf, partout avec toi.</h1>
           <p className="lead">
-            Tu pars d&apos;une single page locale et on pose une base propre pour l&apos;authentification,
-            les données par utilisateur et un dashboard prêt à évoluer.
+            Enregistre tes sessions, retrouve tes spots et garde une trace de chaque sortie.
           </p>
           <div className="button-row">
             <Link className="button" href={user ? "/dashboard" : "/auth/signup"}>
@@ -37,28 +36,27 @@ export default async function HomePage() {
 
         <section className="grid grid-3">
           <article className="panel">
-            <div className="metric">1</div>
-            <div className="label">Projet full-stack unifié</div>
-            <p>Next.js gère le rendu, les routes et la protection d&apos;accès dans le même repo.</p>
+            <div className="metric">01</div>
+            <div className="label">Tes sessions</div>
+            <p>Note le spot, les conditions, ton matériel et tes impressions.</p>
           </article>
           <article className="panel">
-            <div className="metric">100%</div>
-            <div className="label">Sessions isolées par user</div>
-            <p>Supabase Auth + RLS garantissent que chacun ne voit que ses propres données.</p>
+            <div className="metric">02</div>
+            <div className="label">Tes repères</div>
+            <p>Retrouve facilement les sessions et les spots qui comptent pour toi.</p>
           </article>
           <article className="panel">
-            <div className="metric">v1</div>
-            <div className="label">Migration progressive</div>
-            <p>Le prototype HTML reste disponible dans le repo pendant qu&apos;on remonte l&apos;UI proprement.</p>
+            <div className="metric">03</div>
+            <div className="label">Tes statistiques</div>
+            <p>Suis ta pratique et observe l&apos;évolution de tes sessions au fil du temps.</p>
           </article>
         </section>
 
         {!env ? (
           <section className="panel">
-            <div className="eyebrow">Configuration requise</div>
+            <div className="eyebrow">Service indisponible</div>
             <p style={{ marginBottom: 0 }}>
-              Ajoute `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` dans `.env.local`
-              pour activer l&apos;authentification réelle.
+              Wave Log est momentanément indisponible. Réessaie dans quelques instants.
             </p>
           </section>
         ) : null}
