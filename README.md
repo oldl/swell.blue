@@ -84,5 +84,5 @@ L'app utilise Supabase en mode SSR. En production, la confirmation email doit pa
 
 ## Notes
 
-- Le prototype [index.html](index.html) reste la référence visuelle; son CSS est repris dans [app/wavelog.css](app/wavelog.css), avec en fin de fichier les ajustements propres à l'arbre React.
+- Le prototype [app.html](app.html) (ancien index.html, la landing swell.blue occupe désormais index.html) reste la référence visuelle; son CSS est repris dans [app/wavelog.css](app/wavelog.css), avec en fin de fichier les ajustements propres à l'arbre React.
 - Les données saisies dans le prototype vivent dans le `localStorage` du navigateur et ne sont pas importées dans Supabase.
