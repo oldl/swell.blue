@@ -47,6 +47,8 @@ export type SpotRecord = {
   created_at: string;
 };
 
+import type { BoardType } from "@/lib/board-types";
+
 export const BOARD_STATUSES = ["Daily driver", "In rotation", "Step-up", "Retired", "For sale"] as const;
 
 export type BoardStatus = (typeof BOARD_STATUSES)[number];
@@ -59,6 +61,7 @@ export type BoardRecord = {
   volume_l: number | null;
   dimensions: string | null;
   status: BoardStatus | null;
+  board_type: BoardType | null;
   best_conditions: string | null;
   created_at: string;
   updated_at: string;

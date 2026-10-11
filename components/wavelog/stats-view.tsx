@@ -1,11 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
-import { createClient } from "@/lib/supabase/client";
-import { BOARD_STATUSES, type BoardRecord, type BoardStatus, type SessionRecord } from "@/lib/types";
+import type { BoardRecord, SessionRecord } from "@/lib/types";
 import { H_MAP, averageRating, countBy, parseDate, sessionWaveHeight, splitSpot, totalHours } from "@/lib/wavelog";
 
+import { Quiver } from "./quiver";
 import { Icon } from "./ui";
 
 type Period = "month" | "year" | "all";
@@ -19,8 +19,6 @@ type Props = {
 };
 
 type BoardStat = { name: string; count: number; ratingTotal: number; ratingCount: number };
-
-type BoardDraft = { name: string; model: string; volume: string; dimensions: string; status: BoardStatus; bestConditions: string };
 
 function top(counts: Record<string, number>) {
   return Object.entries(counts).sort((a, b) => b[1] - a[1])[0] ?? null;
@@ -40,20 +38,6 @@ function formatDuration(hours: number) {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
   return (h ? `${h}h ` : "") + (m ? `${m}min` : h ? "" : "0min");
-}
-
-function boardStats(list: SessionRecord[]) {
-  const boards: Record<string, BoardStat> = {};
-  list.forEach((s) => {
-    if (!s.board) return;
-    const b = (boards[s.board] ??= { name: s.board, count: 0, ratingTotal: 0, ratingCount: 0 });
-    b.count++;
-    if (s.rating) {
-      b.ratingTotal += s.rating;
-      b.ratingCount++;
-    }
-  });
-  return Object.values(boards).sort((a, b) => b.count - a.count);
 }
 
 function avgOf(stat: { ratingTotal: number; ratingCount: number }) {
@@ -95,86 +79,10 @@ function Insight({ label, icon, value, copy, foot, tone }: { label: string; icon
 }
 
 export function StatsView({ userId, sessions, boards, onQuiverSaved, toast }: Props) {
-  const supabase = useMemo(() => createClient(), []);
   const [period, setPeriod] = useState<Period>("all");
-  const [drafts, setDrafts] = useState<Record<string, BoardDraft> | null>(null);
-  const [saving, setSaving] = useState(false);
-  const editMode = drafts !== null;
-  const profiles = useMemo(() => new Map(boards.map((b) => [b.name, b])), [boards]);
 
   const data = periodSessions(sessions, period);
   const periodName = period === "month" ? "This Month" : period === "year" ? "This Year" : "All Time";
-
-  function startEdit() {
-    const next: Record<string, BoardDraft> = {};
-    boardStats(sessions).forEach((stat, index) => {
-      const p = profiles.get(stat.name);
-      next[stat.name] = {
-        name: stat.name,
-        model: p?.model ?? "",
-        volume: p?.volume_l != null ? String(p.volume_l) : "",
-        dimensions: p?.dimensions ?? "",
-        status: p?.status ?? (index === 0 ? "Daily driver" : "In rotation"),
-        bestConditions: p?.best_conditions ?? ""
-      };
-    });
-    setDrafts(next);
-  }
-
-  function updateDraft(original: string, key: keyof BoardDraft, value: string) {
-    setDrafts((current) => (current ? { ...current, [original]: { ...current[original], [key]: value } } : current));
-  }
-
-  async function saveQuiver() {
-    if (!drafts || saving) return;
-    const entries = Object.entries(drafts);
-    if (entries.some(([, d]) => !d.name.trim())) {
-      toast("Board name cannot be empty");
-      return;
-    }
-    if (entries.some(([, d]) => d.volume.trim() && !(Number(d.volume) > 0))) {
-      toast("Volume must be a positive number");
-      return;
-    }
-
-    setSaving(true);
-    const renames: Record<string, string> = {};
-    try {
-      for (const [original, d] of entries) {
-        const name = d.name.trim();
-        if (name !== original) {
-          const { error } = await supabase.rpc("rename_board", { old_name: original, new_name: name });
-          if (error) throw error;
-          renames[original] = name;
-        }
-      }
-      const rows = entries.map(([, d]) => ({
-        user_id: userId,
-        name: d.name.trim(),
-        model: d.model.trim() || null,
-        volume_l: d.volume.trim() ? Number(d.volume) : null,
-        dimensions: d.dimensions.trim() || null,
-        status: d.status,
-        best_conditions: d.bestConditions.trim() || null
-      }));
-      // Two boards renamed to the same name merge: keep one row per name.
-      const unique = Array.from(new Map(rows.map((row) => [row.name, row])).values());
-      const { error: upsertError } = await supabase.from("boards").upsert(unique, { onConflict: "user_id,name" });
-      if (upsertError) throw upsertError;
-      const { data: fresh, error: readError } = await supabase.from("boards").select("*").order("name");
-      if (readError) throw readError;
-
-      onQuiverSaved((fresh as BoardRecord[]) ?? [], renames);
-      setDrafts(null);
-      const renamed = Object.keys(renames).length;
-      toast(renamed ? `Quiver saved · ${renamed} board${renamed === 1 ? "" : "s"} renamed` : "Quiver saved");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : (error as { message?: string })?.message;
-      toast(`Quiver not saved: ${message ?? "unknown error"}`);
-    } finally {
-      setSaving(false);
-    }
-  }
 
   const header = (
     <section className="stats-editorial">
@@ -202,7 +110,11 @@ export function StatsView({ userId, sessions, boards, onQuiverSaved, toast }: Pr
     </section>
   );
 
-  if (!data.length && !editMode) {
+  const quiver = (
+    <Quiver userId={userId} sessions={sessions} periodSessions={data} boards={boards} onSaved={onQuiverSaved} toast={toast} />
+  );
+
+  if (!data.length) {
     return (
       <>
         {header}
@@ -211,6 +123,7 @@ export function StatsView({ userId, sessions, boards, onQuiverSaved, toast }: Pr
           <h3>No sessions for {periodName.toLowerCase()}</h3>
           <p>Choose another period or log a new session.</p>
         </section>
+        {quiver}
       </>
     );
   }
@@ -256,10 +169,6 @@ export function StatsView({ userId, sessions, boards, onQuiverSaved, toast }: Pr
     .sort((a, b) => b.count - a.count || (avgOf(b) ?? 0) - (avgOf(a) ?? 0))
     .slice(0, 5);
   const maxSpot = spots[0]?.count ?? 1;
-
-  // Quiver: period stats in view mode, every board ever logged in edit mode
-  const quiverSource = editMode ? sessions : data;
-  const quiver = editMode ? boardStats(sessions) : boardStats(data).slice(0, 3);
 
   return (
     <>
@@ -393,128 +302,7 @@ export function StatsView({ userId, sessions, boards, onQuiverSaved, toast }: Pr
         </>
       ) : null}
 
-      {quiver.length ? (
-        <section className="stats-sweet-wrap">
-          <div className="stats-sweet-head">
-            <div>
-              <h2 className="stats-section-title">Your Quiver</h2>
-              <p className="stats-section-copy">
-                {editMode
-                  ? "Rename boards and add their specs. Renaming updates every session that used the board."
-                  : "Equipment usage and rating across your sessions."}
-              </p>
-            </div>
-            <div className="stats-quiver-actions">
-              {editMode ? (
-                <>
-                  <button className="stats-quiver-edit-btn" type="button" disabled={saving} onClick={() => setDrafts(null)}>
-                    Cancel
-                  </button>
-                  <button className="stats-quiver-edit-btn primary" type="button" disabled={saving} onClick={saveQuiver}>
-                    {saving ? "Saving…" : "Save quiver"}
-                  </button>
-                </>
-              ) : (
-                <>
-                  <div className="pill pill-outline">{quiver.length} active</div>
-                  <button className="stats-quiver-edit-btn" type="button" onClick={startEdit}>
-                    Edit quiver
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-          <div className="stats-quiver">
-            {quiver.map((board, index) => {
-              const profile = profiles.get(board.name);
-              const draft = drafts?.[board.name];
-              if (draft) {
-                return (
-                  <div key={board.name} className={index === 0 ? "stats-board top" : "stats-board"}>
-                    <div className="stats-eyebrow">
-                      {board.count} session{board.count === 1 ? "" : "s"}
-                    </div>
-                    <div className="stats-board-edit">
-                      <label>
-                        Name
-                        <input type="text" value={draft.name} autoComplete="off" onChange={(e) => updateDraft(board.name, "name", e.target.value)} />
-                      </label>
-                      <label>
-                        Model / shaper
-                        <input type="text" value={draft.model} placeholder="Pyzel Ghost" autoComplete="off" onChange={(e) => updateDraft(board.name, "model", e.target.value)} />
-                      </label>
-                      <div className="stats-board-edit-row">
-                        <label>
-                          Volume (L)
-                          <input
-                            type="number"
-                            value={draft.volume}
-                            placeholder="31.5"
-                            min="0"
-                            step="0.1"
-                            inputMode="decimal"
-                            onChange={(e) => updateDraft(board.name, "volume", e.target.value)}
-                          />
-                        </label>
-                        <label>
-                          Dimensions
-                          <input type="text" value={draft.dimensions} placeholder="19¼ × 2½" autoComplete="off" onChange={(e) => updateDraft(board.name, "dimensions", e.target.value)} />
-                        </label>
-                      </div>
-                      <label>
-                        Status
-                        <select value={draft.status} onChange={(e) => updateDraft(board.name, "status", e.target.value)}>
-                          {BOARD_STATUSES.map((status) => (
-                            <option key={status}>{status}</option>
-                          ))}
-                        </select>
-                      </label>
-                      <label>
-                        Best conditions
-                        <input
-                          type="text"
-                          value={draft.bestConditions}
-                          placeholder="Offshore, hollow, 1-1.5 m"
-                          autoComplete="off"
-                          onChange={(e) => updateDraft(board.name, "bestConditions", e.target.value)}
-                        />
-                      </label>
-                    </div>
-                  </div>
-                );
-              }
-              const boardAvg = avgOf(board);
-              const specs = [profile?.model, profile?.volume_l != null ? `${profile.volume_l}L` : null, profile?.dimensions].filter(Boolean).join(" · ");
-              return (
-                <div key={board.name} className={index === 0 ? "stats-board top" : "stats-board"}>
-                  <div className="stats-eyebrow">{index === 0 ? "Most Used" : "Surf Craft"}</div>
-                  <div className="stats-board-name">{board.name}</div>
-                  {specs ? <div className="stats-spot-meta">{specs}</div> : null}
-                  <div className="stats-board-grid">
-                    <div>
-                      <span>Sessions</span>
-                      <strong>{board.count} logged</strong>
-                    </div>
-                    <div>
-                      <span>Avg Rating</span>
-                      <strong>{boardAvg === null ? "—" : `${boardAvg.toFixed(1)} ★`}</strong>
-                    </div>
-                    <div>
-                      <span>Usage</span>
-                      <strong>{Math.round((board.count / quiverSource.length) * 100)}%</strong>
-                    </div>
-                    <div>
-                      <span>Status</span>
-                      <strong>{profile?.status ?? (index === 0 ? "Daily driver" : "In rotation")}</strong>
-                    </div>
-                  </div>
-                  {profile?.best_conditions ? <div className="stats-board-preference">Best in: {profile.best_conditions}</div> : null}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      ) : null}
+      {quiver}
     </>
   );
 }
