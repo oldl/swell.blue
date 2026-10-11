@@ -21,6 +21,7 @@ type Props = {
   initialSessions: SessionRecord[];
   initialBoards: BoardRecord[];
   spots: SpotRecord[];
+  initialFavoriteSpotIds: string[];
   loadError: string | null;
 };
 
@@ -35,11 +36,12 @@ function todayLabel() {
   return new Date().toLocaleString("en", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).toUpperCase();
 }
 
-export function WaveLogApp({ userId, userEmail, initialSessions, initialBoards, spots, loadError }: Props) {
+export function WaveLogApp({ userId, userEmail, initialSessions, initialBoards, spots, initialFavoriteSpotIds, loadError }: Props) {
   const supabase = useMemo(() => createClient(), []);
   const isDesktop = useIsDesktop();
   const [sessions, setSessions] = useState(() => sortSessions(initialSessions));
   const [boards, setBoards] = useState(initialBoards);
+  const [favoriteSpotIds, setFavoriteSpotIds] = useState(initialFavoriteSpotIds);
   const [screen, setScreen] = useState<Screen>("home");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [paneOpen, setPaneOpen] = useState(false);
@@ -65,6 +67,25 @@ export function WaveLogApp({ userId, userEmail, initialSessions, initialBoards, 
     () => Array.from(new Set([...boards.map((b) => b.name), ...sessions.map((s) => s.board).filter((b): b is string => Boolean(b))])).sort(),
     [boards, sessions]
   );
+
+  // Recent spots come from the user's own sessions, newest first, so they follow the account too.
+  const recentSpotIds = useMemo(
+    () => Array.from(new Set(sessions.map((s) => s.spot_id).filter((id): id is string => Boolean(id)))).slice(0, 5),
+    [sessions]
+  );
+
+  async function toggleFavoriteSpot(spotId: string) {
+    const wasFavorite = favoriteSpotIds.includes(spotId);
+    // Optimistic update, rolled back if Supabase refuses the change.
+    setFavoriteSpotIds((current) => (wasFavorite ? current.filter((id) => id !== spotId) : [spotId, ...current]));
+    const { error } = wasFavorite
+      ? await supabase.from("favorite_spots").delete().eq("spot_id", spotId)
+      : await supabase.from("favorite_spots").insert({ spot_id: spotId });
+    if (error) {
+      setFavoriteSpotIds((current) => (wasFavorite ? [spotId, ...current] : current.filter((id) => id !== spotId)));
+      toast(`Favorite not saved: ${error.message}`);
+    }
+  }
 
   function go(next: Screen) {
     if (next !== "sessions") setPaneOpen(false);
@@ -227,6 +248,9 @@ export function WaveLogApp({ userId, userEmail, initialSessions, initialBoards, 
             userId={userId}
             editing={editing}
             spots={spots}
+            favoriteSpotIds={favoriteSpotIds}
+            recentSpotIds={recentSpotIds}
+            onToggleFavoriteSpot={toggleFavoriteSpot}
             boardSuggestions={boardSuggestions}
             onSaved={handleSaved}
             onClear={() => {

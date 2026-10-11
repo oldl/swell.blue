@@ -27,6 +27,9 @@ type Props = {
   userId: string;
   editing: SessionRecord | null;
   spots: SpotRecord[];
+  favoriteSpotIds: string[];
+  recentSpotIds: string[];
+  onToggleFavoriteSpot: (spotId: string) => void;
   boardSuggestions: string[];
   onSaved: (session: SessionRecord, wasEdit: boolean) => void;
   onClear: () => void;
@@ -65,6 +68,27 @@ type FormState = {
   rating: number | null;
   comments: string;
 };
+
+type CountryFilter = "ALL" | "BE" | "FR" | "ES" | "PT";
+
+const COUNTRY_OPTIONS: Array<{ code: CountryFilter; label: string }> = [
+  { code: "ALL", label: "All" },
+  { code: "BE", label: "🇧🇪 BE" },
+  { code: "FR", label: "🇫🇷 FR" },
+  { code: "ES", label: "🇪🇸 ES" },
+  { code: "PT", label: "🇵🇹 PT" }
+];
+
+const COUNTRY_NAMES: Record<string, string> = {
+  BE: "Belgium",
+  FR: "France",
+  ES: "Spain",
+  PT: "Portugal"
+};
+
+function normalizeSearch(text: string) {
+  return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
 
 function initialForm(s: SessionRecord | null): FormState {
   return {
@@ -110,19 +134,57 @@ function round(value: number | null, digits: number) {
 function SpotInput({
   spots,
   value,
+  favoriteIds,
+  recentIds,
+  onToggleFavorite,
   onChange
 }: {
   spots: SpotRecord[];
   value: string;
+  favoriteIds: string[];
+  recentIds: string[];
+  onToggleFavorite: (spotId: string) => void;
   onChange: (name: string, spot: SpotRecord | null) => void;
 }) {
   const listId = useId();
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(-1);
-  const query = value.trim().toLowerCase();
-  const matches = spots.filter(
-    (spot) => !query || spot.name.toLowerCase().includes(query) || spot.municipality.toLowerCase().includes(query)
-  );
+  const [country, setCountry] = useState<CountryFilter>("ALL");
+  const query = normalizeSearch(value.trim());
+  const filtered = spots.filter((spot) => {
+    const matchesCountry = country === "ALL" || spot.country_code === country;
+    const haystack = normalizeSearch(`${spot.name} ${spot.municipality} ${spot.region} ${COUNTRY_NAMES[spot.country_code] ?? spot.country_code}`);
+    return matchesCountry && (!query || haystack.includes(query));
+  });
+
+  const groups = (() => {
+    if (query) {
+      return Object.entries(
+        filtered.reduce<Record<string, SpotRecord[]>>((result, spot) => {
+          const key = `${COUNTRY_NAMES[spot.country_code] ?? spot.country_code} · ${spot.region}`;
+          (result[key] ??= []).push(spot);
+          return result;
+        }, {})
+      ).map(([label, items]) => ({ label, spots: items }));
+    }
+
+    const available = new Set(filtered.map((spot) => spot.id));
+    const favorites = favoriteIds.map((id) => spots.find((spot) => spot.id === id)).filter((spot): spot is SpotRecord => Boolean(spot && available.has(spot.id)));
+    const recent = recentIds.map((id) => spots.find((spot) => spot.id === id)).filter((spot): spot is SpotRecord => Boolean(spot && available.has(spot.id) && !favoriteIds.includes(spot.id)));
+    const featured = new Set([...favorites, ...recent].map((spot) => spot.id));
+    const byCountry = filtered.reduce<Record<string, SpotRecord[]>>((result, spot) => {
+      if (featured.has(spot.id)) return result;
+      const key = COUNTRY_NAMES[spot.country_code] ?? spot.country_code;
+      (result[key] ??= []).push(spot);
+      return result;
+    }, {});
+    return [
+      ...(favorites.length ? [{ label: "Your spots", spots: favorites }] : []),
+      ...(recent.length ? [{ label: "Recent", spots: recent }] : []),
+      ...Object.entries(byCountry).map(([label, items]) => ({ label, spots: items }))
+    ];
+  })();
+  const matches = groups.flatMap((group) => group.spots);
 
   function choose(spot: SpotRecord) {
     onChange(spot.name, spot);
@@ -136,7 +198,7 @@ function SpotInput({
         className="field-input"
         type="text"
         value={value}
-        placeholder="Choose a Belgian spot or enter a name"
+        placeholder="Search a spot, city or region…"
         autoComplete="off"
         role="combobox"
         aria-autocomplete="list"
@@ -147,7 +209,7 @@ function SpotInput({
         onChange={(event) => {
           // Typing keeps the link only while the text still matches a catalogue spot exactly.
           const typed = event.target.value;
-          onChange(typed, spots.find((spot) => spot.name.toLowerCase() === typed.trim().toLowerCase()) ?? null);
+          onChange(typed, spots.find((spot) => normalizeSearch(spot.name) === normalizeSearch(typed.trim())) ?? null);
           setOpen(true);
           setActive(-1);
         }}
@@ -167,30 +229,76 @@ function SpotInput({
         }}
       />
       <div className={open ? "spot-suggestions show" : "spot-suggestions"} id={listId} role="listbox">
-        {matches.length ? (
-          matches.map((spot, i) => (
+        <div className="spot-filter-bar">
+          {COUNTRY_OPTIONS.map((option) => (
             <button
-              key={spot.id}
+              key={option.code}
               type="button"
-              role="option"
-              aria-selected={i === active}
-              className={i === active ? "spot-suggestion active" : "spot-suggestion"}
+              className={country === option.code ? "spot-country-filter active" : "spot-country-filter"}
               onMouseDown={(event) => event.preventDefault()}
-              onClick={() => choose(spot)}
+              onClick={() => { setCountry(option.code); setActive(-1); }}
             >
-              <strong>{spot.name}</strong>
-              <span>{spot.municipality}</span>
+              {option.label}
             </button>
-          ))
+          ))}
+        </div>
+        {matches.length ? (
+          <div className="spot-results">
+            {groups.map((group) => (
+              <div className="spot-group" key={group.label}>
+                <div className="spot-group-label">{group.label}</div>
+                {group.spots.map((spot) => {
+                  const index = matches.findIndex((match) => match.id === spot.id);
+                  const favorite = favoriteIds.includes(spot.id);
+                  return (
+                    <div className="spot-suggestion-row" key={spot.id} role="option" aria-selected={index === active}>
+                      <button
+                        type="button"
+                        className={index === active ? "spot-suggestion active" : "spot-suggestion"}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => choose(spot)}
+                      >
+                        <span className="spot-suggestion-main">
+                          <strong>{spot.name}</strong>
+                          <span className="spot-suggestion-meta">{spot.municipality} · {COUNTRY_NAMES[spot.country_code] ?? spot.country_code}</span>
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        className={favorite ? "spot-favorite active" : "spot-favorite"}
+                        aria-label={favorite ? `Remove ${spot.name} from favorites` : `Add ${spot.name} to favorites`}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => onToggleFavorite(spot.id)}
+                      >
+                        {favorite ? "★" : "☆"}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
         ) : (
-          <div className="spot-suggestions-empty">No Belgian spot found</div>
+          <div className="spot-suggestions-empty">No spot found in this country.</div>
         )}
+        <div className="spot-attribution">Spot positions partly © OpenStreetMap contributors</div>
       </div>
     </div>
   );
 }
 
-export function SessionForm({ userId, editing, spots, boardSuggestions, onSaved, onClear, toast }: Props) {
+export function SessionForm({
+  userId,
+  editing,
+  spots,
+  favoriteSpotIds,
+  recentSpotIds,
+  onToggleFavoriteSpot,
+  boardSuggestions,
+  onSaved,
+  onClear,
+  toast
+}: Props) {
   const supabase = useMemo(() => createClient(), []);
   const boardListId = useId();
   const [form, setForm] = useState<FormState>(() => initialForm(editing));
@@ -208,7 +316,7 @@ export function SessionForm({ userId, editing, spots, boardSuggestions, onSaved,
     setConditions(null);
     setMarineError(null);
     if (!form.spotId) {
-      setMarineError("Choose a Belgian spot from the list first.");
+      setMarineError("Choose a spot from the list first.");
       return;
     }
     setMarineLoading(true);
@@ -349,6 +457,9 @@ export function SessionForm({ userId, editing, spots, boardSuggestions, onSaved,
                 <SpotInput
                   spots={spots}
                   value={form.spot}
+                  favoriteIds={favoriteSpotIds}
+                  recentIds={recentSpotIds}
+                  onToggleFavorite={onToggleFavoriteSpot}
                   onChange={(name, spot) => setForm((current) => ({ ...current, spot: name, spotId: spot?.id ?? "" }))}
                 />
               </div>

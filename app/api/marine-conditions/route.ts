@@ -173,12 +173,24 @@ function angularDistance(first: number, second: number) {
   return Math.min(distance, 360 - distance);
 }
 
-function windType(speed: number | null, direction: number | null) {
+const DEFAULT_FACING: Record<string, number> = { BE: 315, FR: 270, ES: 0, PT: 270 };
+
+function spotTimeZone(countryCode: string, region: string | null) {
+  if (countryCode === "ES" && region === "Canary Islands") return "Atlantic/Canary";
+  if (countryCode === "PT" && region === "Azores") return "Atlantic/Azores";
+  if (countryCode === "PT" && region === "Madeira") return "Atlantic/Madeira";
+  if (countryCode === "PT") return "Europe/Lisbon";
+  if (countryCode === "ES") return "Europe/Madrid";
+  if (countryCode === "FR") return "Europe/Paris";
+  return "Europe/Brussels";
+}
+
+function windType(speed: number | null, direction: number | null, coastDirection: number) {
   if (speed === null || direction === null) return "";
   if (speed < 5) return "Glassy";
 
-  // The Belgian coastline faces roughly north-west. Wind direction is where the wind comes from.
-  const difference = angularDistance(direction, 315);
+  // Wind direction is where the wind comes from; coastDirection is the bearing the beach faces.
+  const difference = angularDistance(direction, coastDirection);
   if (difference <= 30) return "Onshore";
   if (difference <= 90) return "Cross-on";
   if (difference < 150) return "Cross-off";
@@ -236,7 +248,7 @@ export async function GET(request: Request) {
 
   const { data: spot, error: spotError } = await supabase
     .from("spots")
-    .select("id,name,latitude,longitude")
+    .select("id,name,latitude,longitude,country_code,region,facing_deg")
     .eq("id", spotId)
     .single();
 
@@ -248,7 +260,11 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Les coordonnées de ce spot restent à confirmer." }, { status: 422 });
   }
 
-  const officialStation = closestOfficialStation(spot.latitude, spot.longitude);
+  const isBelgianSpot = spot.country_code === "BE";
+  const officialStation = isBelgianSpot ? closestOfficialStation(spot.latitude, spot.longitude) : null;
+  const timeZone = spotTimeZone(spot.country_code, spot.region);
+  // Per-spot orientation (spots.facing_deg); the country default is only a fallback for spots without one.
+  const coastDirection = spot.facing_deg ?? DEFAULT_FACING[spot.country_code] ?? 270;
 
   const marineUrl = new URL("https://marine-api.open-meteo.com/v1/marine");
   marineUrl.search = new URLSearchParams({
@@ -265,7 +281,7 @@ export async function GET(request: Request) {
     ].join(","),
     start_date: date,
     end_date: date,
-    timezone: "Europe/Brussels",
+    timezone: timeZone,
     cell_selection: "sea"
   }).toString();
 
@@ -283,14 +299,14 @@ export async function GET(request: Request) {
     hourly: "wind_speed_10m,wind_direction_10m",
     start_date: date,
     end_date: date,
-    timezone: "Europe/Brussels"
+    timezone: timeZone
   }).toString();
 
   try {
     const [marineResponse, weatherResponse, officialForecast] = await Promise.all([
       fetch(marineUrl, { next: { revalidate: 1800 } }),
       fetch(weatherUrl, { next: { revalidate: 1800 } }),
-      officialWaveForecast(officialStation, date, time).catch(() => null)
+      officialStation ? officialWaveForecast(officialStation, date, time).catch(() => null) : Promise.resolve(null)
     ]);
 
     if (!marineResponse.ok || !weatherResponse.ok) {
@@ -358,7 +374,7 @@ export async function GET(request: Request) {
       suggestions: {
         waveSize: waveSize(waveHeight),
         swellDirection: cardinalDirection(swellDirection),
-        windType: windType(windSpeed, windDirection),
+        windType: windType(windSpeed, windDirection, coastDirection),
         waterTemp: waterTemperature === null ? "" : String(Math.round(waterTemperature)),
         current: currentType(currentSpeed),
         tide: tideType(marine.hourly?.sea_level_height_msl, index)

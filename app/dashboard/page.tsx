@@ -55,17 +55,19 @@ export default async function DashboardPage() {
     }
   }
 
-  const [sessionsResult, boardsResult, spotsResult] = await Promise.all([
+  const [sessionsResult, boardsResult, spotsResult, favoritesResult] = await Promise.all([
     loadAllSessions(),
     supabase.from("boards").select("*").order("name"),
-    supabase.from("spots").select("*").eq("country_code", "BE").eq("is_curated", true).order("name")
+    supabase.from("spots").select("*").in("country_code", ["BE", "FR", "ES", "PT"]).eq("is_curated", true).order("country_code").order("name"),
+    supabase.from("favorite_spots").select("spot_id").order("created_at", { ascending: false })
   ]);
 
   const errors = [
     sessionsResult.error?.message,
     // boards / spots missing usually means a migration in supabase/migrations hasn't been applied yet.
     boardsResult.error ? `boards: ${boardsResult.error.message}` : null,
-    spotsResult.error ? `spots: ${spotsResult.error.message}` : null
+    spotsResult.error ? `spots: ${spotsResult.error.message}` : null,
+    favoritesResult.error ? `favorite_spots: ${favoritesResult.error.message}` : null
   ].filter(Boolean);
 
   return (
@@ -75,6 +77,7 @@ export default async function DashboardPage() {
       initialSessions={sessionsResult.rows}
       initialBoards={(boardsResult.data as BoardRecord[] | null) ?? []}
       spots={(spotsResult.data as SpotRecord[] | null) ?? []}
+      initialFavoriteSpotIds={((favoritesResult.data as Array<{ spot_id: string }> | null) ?? []).map((f) => f.spot_id)}
       loadError={errors.length ? errors.join(" · ") : null}
     />
   );

@@ -41,6 +41,7 @@ export type SpotRecord = {
   latitude: number | null;
   longitude: number | null;
   break_type: string;
+  facing_deg: number | null;
   source_name: string | null;
   source_url: string | null;
   is_curated: boolean;

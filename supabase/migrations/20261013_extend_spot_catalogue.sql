@@ -1,0 +1,180 @@
+-- Extends the FR / ES / PT catalogue (incl. Canary Islands, Madeira, Azores) with 136 spots.
+-- Run after 20261012_spot_facing_and_favorites.sql (needs spots.facing_deg). Safe to run more than once.
+-- Positions marked "© OpenStreetMap contributors" in source_name come from Nominatim (ODbL);
+-- the others are curated by hand. facing_deg = bearing the beach faces (approximate).
+insert into public.spots (
+  slug, name, municipality, region, country_code, latitude, longitude,
+  break_type, source_name, facing_deg, is_curated
+)
+values
+  -- FR · Normandie
+  ('fr-siouville', 'Siouville', 'Siouville-Hague', 'Normandie', 'FR', 49.55798, -1.85434, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  -- FR · Bretagne
+  ('fr-le-dossen', 'Le Dossen', 'Santec', 'Bretagne', 'FR', 48.70123, -4.05634, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 330, true),
+  ('fr-blancs-sablons', 'Les Blancs Sablons', 'Le Conquet', 'Bretagne', 'FR', 48.36654, -4.7594, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 300, true),
+  ('fr-le-petit-minou', 'Le Petit Minou', 'Plouzané', 'Bretagne', 'FR', 48.3393, -4.6145, 'reef_break', 'Wave Log curated catalogue', 210, true),
+  ('fr-goulien', 'Goulien', 'Crozon', 'Bretagne', 'FR', 48.2452, -4.54508, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('fr-baie-des-trepasses', 'Baie des Trépassés', 'Plogoff', 'Bretagne', 'FR', 48.04644, -4.70831, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('fr-saint-tugen', 'Saint-Tugen', 'Primelin', 'Bretagne', 'FR', 48.02204, -4.59336, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 210, true),
+  ('fr-fort-bloque', 'Fort-Bloqué', 'Ploemeur', 'Bretagne', 'FR', 47.73495, -3.50483, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 220, true),
+  ('fr-les-kaolins', 'Les Kaolins', 'Ploemeur', 'Bretagne', 'FR', 47.72283, -3.48735, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 200, true),
+  ('fr-kerhillio', 'Kerhillio', 'Erdeven', 'Bretagne', 'FR', 47.61075, -3.16753, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 230, true),
+  ('fr-port-blanc-quiberon', 'Port Blanc', 'Saint-Pierre-Quiberon', 'Bretagne', 'FR', 47.52056, -3.15427, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 250, true),
+  -- FR · Pays de la Loire
+  ('fr-la-govelle', 'La Govelle', 'Batz-sur-Mer', 'Pays de la Loire', 'FR', 47.26585, -2.45739, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 210, true),
+  -- FR · Vendée
+  ('fr-sion', 'Sion-sur-l''Océan', 'Saint-Hilaire-de-Riez', 'Vendée', 'FR', 46.71177, -1.97977, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 260, true),
+  ('fr-la-paracou', 'La Paracou', 'Les Sables-d''Olonne', 'Vendée', 'FR', 46.50337, -1.81604, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 220, true),
+  ('fr-les-conches', 'Les Conches', 'Longeville-sur-Mer', 'Vendée', 'FR', 46.38881, -1.49464, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 230, true),
+  ('fr-la-terriere', 'La Terrière', 'La Tranche-sur-Mer', 'Vendée', 'FR', 46.3611, -1.47644, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 220, true),
+  -- FR · Charente-Maritime
+  ('fr-les-huttes', 'Les Huttes', 'Saint-Denis-d''Oléron', 'Charente-Maritime', 'FR', 46.01699, -1.39488, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 300, true),
+  ('fr-vert-bois', 'Vert-Bois', 'Dolus-d''Oléron', 'Charente-Maritime', 'FR', 45.86597, -1.25781, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 260, true),
+  ('fr-la-cote-sauvage', 'La Côte Sauvage', 'La Tremblade', 'Charente-Maritime', 'FR', 45.733, -1.239, 'beach_break', 'Wave Log curated catalogue', 260, true),
+  -- FR · Gironde
+  ('fr-soulac', 'Soulac-sur-Mer', 'Soulac-sur-Mer', 'Gironde', 'FR', 45.51642, -1.12691, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 280, true),
+  ('fr-montalivet', 'Montalivet', 'Vendays-Montalivet', 'Gironde', 'FR', 45.377, -1.16, 'beach_break', 'Wave Log curated catalogue', 270, true),
+  ('fr-hourtin-plage', 'Hourtin Plage', 'Hourtin', 'Gironde', 'FR', 45.17865, -1.17942, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('fr-carcans-plage', 'Carcans Plage', 'Carcans', 'Gironde', 'FR', 45.09065, -1.19112, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('fr-le-truc-vert', 'Le Truc Vert', 'Lège-Cap-Ferret', 'Gironde', 'FR', 44.69797, -1.25363, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('fr-la-salie', 'La Salie', 'La Teste-de-Buch', 'Gironde', 'FR', 44.5292, -1.25635, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  -- FR · Landes
+  ('fr-mimizan-plage', 'Mimizan Plage', 'Mimizan', 'Landes', 'FR', 44.21302, -1.295, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('fr-contis', 'Contis', 'Saint-Julien-en-Born', 'Landes', 'FR', 44.09123, -1.32337, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('fr-moliets', 'Moliets', 'Moliets-et-Maa', 'Landes', 'FR', 43.85304, -1.39341, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('fr-vieux-boucau', 'Vieux-Boucau', 'Vieux-Boucau-les-Bains', 'Landes', 'FR', 43.79298, -1.41358, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('fr-le-penon', 'Le Penon', 'Seignosse', 'Landes', 'FR', 43.70808, -1.43369, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('fr-les-bourdaines', 'Les Bourdaines', 'Seignosse', 'Landes', 'FR', 43.69864, -1.43406, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('fr-l-epi-notre-dame', 'L''Épi Notre-Dame', 'Capbreton', 'Landes', 'FR', 43.64926, -1.44335, 'jetty_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('fr-le-santocha', 'Le Santocha', 'Capbreton', 'Landes', 'FR', 43.6458, -1.44568, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('fr-labenne-ocean', 'Labenne Océan', 'Labenne', 'Landes', 'FR', 43.59872, -1.47093, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('fr-ondres-plage', 'Ondres Plage', 'Ondres', 'Landes', 'FR', 43.57742, -1.48824, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('fr-le-metro', 'Le Métro', 'Tarnos', 'Landes', 'FR', 43.54743, -1.48909, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 280, true),
+  -- FR · Pays basque
+  ('fr-la-barre', 'La Barre', 'Anglet', 'Pays basque', 'FR', 43.5281, -1.52319, 'jetty_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 300, true),
+  ('fr-sables-d-or', 'Les Sables d''Or', 'Anglet', 'Pays basque', 'FR', 43.50163, -1.54103, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 300, true),
+  ('fr-chambre-d-amour', 'La Chambre d''Amour', 'Anglet', 'Pays basque', 'FR', 43.49581, -1.54585, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 300, true),
+  ('fr-grande-plage-biarritz', 'Grande Plage', 'Biarritz', 'Pays basque', 'FR', 43.48533, -1.55839, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 300, true),
+  ('fr-cote-des-basques', 'Côte des Basques', 'Biarritz', 'Pays basque', 'FR', 43.48133, -1.56765, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 280, true),
+  ('fr-marbella', 'Marbella', 'Biarritz', 'Pays basque', 'FR', 43.46796, -1.5732, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 280, true),
+  ('fr-ilbarritz', 'Ilbarritz', 'Bidart', 'Pays basque', 'FR', 43.45861, -1.58026, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 300, true),
+  ('fr-erretegia', 'Erretegia', 'Bidart', 'Pays basque', 'FR', 43.44657, -1.58959, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 300, true),
+  ('fr-bidart-centre', 'Bidart Centre', 'Bidart', 'Pays basque', 'FR', 43.43919, -1.59089, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 300, true),
+  ('fr-cenitz', 'Cenitz', 'Guéthary', 'Pays basque', 'FR', 43.42249, -1.6196, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 330, true),
+  ('fr-belharra', 'Belharra', 'Urrugne', 'Pays basque', 'FR', 43.421, -1.638, 'reef_break', 'Wave Log curated catalogue', 330, true),
+  ('fr-erromardie', 'Erromardie', 'Saint-Jean-de-Luz', 'Pays basque', 'FR', 43.40648, -1.64277, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 330, true),
+  -- ES · Basque Country
+  ('es-deba', 'Deba', 'Deba', 'Basque Country', 'ES', 43.29809, -2.3529, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-zumaia', 'Itzurun', 'Zumaia', 'Basque Country', 'ES', 43.30016, -2.26068, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 315, true),
+  ('es-laga', 'Laga', 'Ibarrangelu', 'Basque Country', 'ES', 43.40932, -2.65547, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-laida', 'Laida', 'Ibarrangelu', 'Basque Country', 'ES', 43.40024, -2.68547, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-gorliz', 'Gorliz', 'Gorliz', 'Basque Country', 'ES', 43.4148, -2.94375, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-barrika', 'Barrika', 'Barrika', 'Basque Country', 'ES', 43.40686, -2.96247, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 315, true),
+  ('es-menakoz', 'Meñakoz', 'Barrika', 'Basque Country', 'ES', 43.39518, -2.98575, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 315, true),
+  ('es-la-arena', 'La Arena', 'Muskiz', 'Basque Country', 'ES', 43.34848, -3.11749, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 330, true),
+  -- ES · Cantabria
+  ('es-berria', 'Berria', 'Santoña', 'Cantabria', 'ES', 43.46501, -3.46847, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 350, true),
+  ('es-trengandin', 'Trengandín', 'Noja', 'Cantabria', 'ES', 43.47851, -3.5178, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-el-sardinero', 'El Sardinero', 'Santander', 'Cantabria', 'ES', 43.4731, -3.78219, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 70, true),
+  ('es-los-locos', 'Los Locos', 'Suances', 'Cantabria', 'ES', 43.43869, -4.04679, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-oyambre', 'Oyambre', 'Valdáliga', 'Cantabria', 'ES', 43.39401, -4.33587, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-gerra', 'Gerra', 'San Vicente de la Barquera', 'Cantabria', 'ES', 43.40096, -4.35539, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-meron', 'Merón', 'San Vicente de la Barquera', 'Cantabria', 'ES', 43.39487, -4.36508, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  -- ES · Asturias
+  ('es-vega', 'Vega', 'Ribadesella', 'Asturias', 'ES', 43.48018, -5.14052, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-san-lorenzo', 'San Lorenzo', 'Gijón', 'Asturias', 'ES', 43.54274, -5.65902, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-verdicio', 'Verdicio', 'Gozón', 'Asturias', 'ES', 43.62633, -5.87625, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-xago', 'Xagó', 'Gozón', 'Asturias', 'ES', 43.60455, -5.91933, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-tapia', 'Tapia de Casariego', 'Tapia de Casariego', 'Asturias', 'ES', 43.56815, -6.94772, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-penarronda', 'Peñarronda', 'Castropol', 'Asturias', 'ES', 43.5533, -6.99613, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  -- ES · Galicia
+  ('es-frouxeira', 'A Frouxeira', 'Valdoviño', 'Galicia', 'ES', 43.61743, -8.14894, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 300, true),
+  ('es-doninos', 'Doniños', 'Ferrol', 'Galicia', 'ES', 43.49527, -8.31932, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 290, true),
+  ('es-sabon', 'Sabón', 'Arteixo', 'Galicia', 'ES', 43.32969, -8.50643, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 330, true),
+  ('es-baldaio', 'Baldaio', 'Carballo', 'Galicia', 'ES', 43.29621, -8.68423, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 310, true),
+  ('es-nemina', 'Nemiña', 'Muxía', 'Galicia', 'ES', 43.00717, -9.25992, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 250, true),
+  ('es-o-rostro', 'O Rostro', 'Fisterra', 'Galicia', 'ES', 42.96755, -9.26307, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('es-carnota', 'Carnota', 'Carnota', 'Galicia', 'ES', 42.82452, -9.10447, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 260, true),
+  ('es-a-lanzada', 'A Lanzada', 'O Grove', 'Galicia', 'ES', 42.44693, -8.87597, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 250, true),
+  ('es-montalvo', 'Montalvo', 'Sanxenxo', 'Galicia', 'ES', 42.39756, -8.84943, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 220, true),
+  -- ES · Andalusia
+  ('es-matalascanas', 'Matalascañas', 'Almonte', 'Andalusia', 'ES', 36.99144, -6.54501, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 210, true),
+  ('es-santa-maria-del-mar', 'Santa María del Mar', 'Cádiz', 'Andalusia', 'ES', 36.52018, -6.28679, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 230, true),
+  ('es-la-barrosa', 'La Barrosa', 'Chiclana de la Frontera', 'Andalusia', 'ES', 36.34318, -6.16699, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 240, true),
+  ('es-roche', 'Roche', 'Conil de la Frontera', 'Andalusia', 'ES', 36.31129, -6.15312, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 230, true),
+  ('es-el-palmar', 'El Palmar', 'Vejer de la Frontera', 'Andalusia', 'ES', 36.2253, -6.06616, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 230, true),
+  ('es-los-lances', 'Los Lances', 'Tarifa', 'Andalusia', 'ES', 36.03003, -5.62406, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 210, true),
+  -- ES · Canary Islands
+  ('es-la-santa', 'La Santa', 'Tinajo', 'Canary Islands', 'ES', 29.10773, -13.66568, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 330, true),
+  ('es-arrieta', 'Arrieta', 'Haría', 'Canary Islands', 'ES', 29.13181, -13.46183, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 60, true),
+  ('es-el-hierro-fuerteventura', 'El Hierro', 'La Oliva', 'Canary Islands', 'ES', 28.73902, -13.95148, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-el-cotillo', 'El Cotillo', 'La Oliva', 'Canary Islands', 'ES', 28.68147, -14.01116, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('es-la-pared', 'La Pared', 'Pájara', 'Canary Islands', 'ES', 28.21818, -14.22103, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 280, true),
+  ('es-la-cicer', 'La Cícer', 'Las Palmas de Gran Canaria', 'Canary Islands', 'ES', 28.13279, -15.44131, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 280, true),
+  ('es-el-fronton', 'El Frontón', 'Gáldar', 'Canary Islands', 'ES', 28.152, -15.668, 'reef_break', 'Wave Log curated catalogue', 0, true),
+  ('es-almaciga', 'Almáciga', 'Santa Cruz de Tenerife', 'Canary Islands', 'ES', 28.5697, -16.20467, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-bajamar', 'Bajamar', 'San Cristóbal de La Laguna', 'Canary Islands', 'ES', 28.55581, -16.34535, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 330, true),
+  ('es-el-socorro', 'El Socorro', 'Los Realejos', 'Canary Islands', 'ES', 28.39375, -16.59719, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('es-las-americas', 'Las Américas', 'Arona', 'Canary Islands', 'ES', 28.06198, -16.7344, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 220, true),
+  ('es-el-medano', 'El Médano', 'Granadilla de Abona', 'Canary Islands', 'ES', 28.04621, -16.53817, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 130, true),
+  -- PT · Minho
+  ('pt-moledo', 'Moledo', 'Caminha', 'Minho', 'PT', 41.85101, -8.86645, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('pt-cabedelo-viana', 'Cabedelo', 'Viana do Castelo', 'Minho', 'PT', 41.67679, -8.82922, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  -- PT · Porto
+  ('pt-povoa-de-varzim', 'Póvoa de Varzim', 'Póvoa de Varzim', 'Porto', 'PT', 41.37472, -8.76258, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('pt-leca-da-palmeira', 'Leça da Palmeira', 'Matosinhos', 'Porto', 'PT', 41.19725, -8.71087, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  -- PT · Aveiro
+  ('pt-furadouro', 'Furadouro', 'Ovar', 'Aveiro', 'PT', 40.87051, -8.67838, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('pt-praia-da-barra', 'Praia da Barra', 'Ílhavo', 'Aveiro', 'PT', 40.63612, -8.74878, 'jetty_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('pt-costa-nova', 'Costa Nova', 'Ílhavo', 'Aveiro', 'PT', 40.62007, -8.75262, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  -- PT · Coimbra
+  ('pt-praia-de-mira', 'Praia de Mira', 'Mira', 'Coimbra', 'PT', 40.45082, -8.80582, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('pt-buarcos', 'Buarcos', 'Figueira da Foz', 'Coimbra', 'PT', 40.16496, -8.8751, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 230, true),
+  -- PT · Leiria
+  ('pt-pedrogao', 'Pedrógão', 'Leiria', 'Leiria', 'PT', 39.9137, -8.95485, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('pt-sao-pedro-de-moel', 'São Pedro de Moel', 'Marinha Grande', 'Leiria', 'PT', 39.75386, -9.03338, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('pt-foz-do-arelho', 'Foz do Arelho', 'Caldas da Rainha', 'Leiria', 'PT', 39.42894, -9.22381, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 280, true),
+  -- PT · Lisbon
+  ('pt-santa-cruz', 'Santa Cruz', 'Torres Vedras', 'Lisbon', 'PT', 39.136, -9.38267, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('pt-sao-lourenco', 'São Lourenço', 'Ericeira', 'Lisbon', 'PT', 39.01169, -9.42116, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 290, true),
+  ('pt-pedra-branca', 'Pedra Branca', 'Ericeira', 'Lisbon', 'PT', 38.97867, -9.42179, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('pt-praia-do-sul-ericeira', 'Praia do Sul', 'Ericeira', 'Lisbon', 'PT', 38.95763, -9.41552, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 260, true),
+  ('pt-praia-grande-sintra', 'Praia Grande', 'Sintra', 'Lisbon', 'PT', 38.81281, -9.4784, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 280, true),
+  ('pt-guincho', 'Guincho', 'Cascais', 'Lisbon', 'PT', 38.73316, -9.47278, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  -- PT · Alentejo
+  ('pt-sao-torpes', 'São Torpes', 'Sines', 'Alentejo', 'PT', 37.91986, -8.80489, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 230, true),
+  ('pt-porto-covo', 'Porto Covo', 'Sines', 'Alentejo', 'PT', 37.84967, -8.79152, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 260, true),
+  ('pt-malhao', 'Malhão', 'Odemira', 'Alentejo', 'PT', 37.78017, -8.80208, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('pt-almograve', 'Almograve', 'Odemira', 'Alentejo', 'PT', 37.65205, -8.80223, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  -- PT · Algarve
+  ('pt-odeceixe', 'Odeceixe', 'Aljezur', 'Algarve', 'PT', 37.44212, -8.79739, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('pt-monte-clerigo', 'Monte Clérigo', 'Aljezur', 'Algarve', 'PT', 37.34217, -8.85259, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('pt-bordeira', 'Bordeira', 'Aljezur', 'Algarve', 'PT', 37.19944, -8.90039, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 270, true),
+  ('pt-cordoama', 'Cordoama', 'Vila do Bispo', 'Algarve', 'PT', 37.10923, -8.93721, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 260, true),
+  ('pt-beliche', 'Beliche', 'Vila do Bispo', 'Algarve', 'PT', 37.02593, -8.96387, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 170, true),
+  ('pt-mareta', 'Mareta', 'Vila do Bispo', 'Algarve', 'PT', 37.00504, -8.94098, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 180, true),
+  ('pt-zavial', 'Zavial', 'Vila do Bispo', 'Algarve', 'PT', 37.04635, -8.87151, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 180, true),
+  -- PT · Madeira
+  ('pt-jardim-do-mar', 'Jardim do Mar', 'Calheta', 'Madeira', 'PT', 32.73979, -17.21273, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 220, true),
+  ('pt-paul-do-mar', 'Paul do Mar', 'Calheta', 'Madeira', 'PT', 32.7529, -17.22551, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 220, true),
+  ('pt-madalena-do-mar', 'Madalena do Mar', 'Ponta do Sol', 'Madeira', 'PT', 32.70301, -17.1368, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 200, true),
+  ('pt-seixal-madeira', 'Seixal', 'Porto Moniz', 'Madeira', 'PT', 32.82191, -17.10314, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 350, true),
+  ('pt-ponta-delgada-madeira', 'Ponta Delgada', 'São Vicente', 'Madeira', 'PT', 32.82821, -16.98745, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('pt-porto-da-cruz', 'Porto da Cruz', 'Machico', 'Madeira', 'PT', 32.77499, -16.82939, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 45, true),
+  -- PT · Azores
+  ('pt-santa-barbara', 'Santa Bárbara', 'Ribeira Grande', 'Azores', 'PT', 37.81665, -25.54878, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('pt-monte-verde', 'Monte Verde', 'Ribeira Grande', 'Azores', 'PT', 37.82299, -25.5268, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 0, true),
+  ('pt-mosteiros', 'Mosteiros', 'Ponta Delgada', 'Azores', 'PT', 37.88772, -25.82377, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 290, true),
+  ('pt-populo', 'Pópulo', 'Ponta Delgada', 'Azores', 'PT', 37.75063, -25.61853, 'beach_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 180, true),
+  ('pt-faja-do-santo-cristo', 'Fajã de Santo Cristo', 'Calheta', 'Azores', 'PT', 38.62719, -27.93651, 'reef_break', 'Wave Log curated catalogue · position © OpenStreetMap contributors', 30, true)
+on conflict (slug) do update set
+  name = excluded.name,
+  municipality = excluded.municipality,
+  region = excluded.region,
+  country_code = excluded.country_code,
+  latitude = excluded.latitude,
+  longitude = excluded.longitude,
+  break_type = excluded.break_type,
+  source_name = excluded.source_name,
+  facing_deg = excluded.facing_deg,
+  is_curated = true;

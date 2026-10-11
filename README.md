@@ -80,7 +80,7 @@ L'app utilise Supabase en mode SSR. En production, la confirmation email doit pa
 - [lib/wavelog.ts](lib/wavelog.ts): options et helpers partagés
 - [lib/supabase](lib/supabase): clients Supabase navigateur/serveur/middleware
 - [supabase/schema.sql](supabase/schema.sql): tables + policies RLS
-- [supabase/migrations](supabase/migrations): évolutions du schéma (`spots`, conditions marines, quiver `boards`, `rename_board`)
+- [supabase/migrations](supabase/migrations): évolutions du schéma (`spots` BE/FR/ES/PT avec orientation `facing_deg`, `favorite_spots`, conditions marines, quiver `boards`, `rename_board`)
 
 ## Notes
 
