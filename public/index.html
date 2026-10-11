@@ -239,7 +239,7 @@ body{margin:0}
       <a href="#quiver">Quiver</a>
     </nav>
     <div class="nav-cta">
-      <a class="btn" href="app.html">Open the logbook <span class="ms" aria-hidden="true">arrow_outward</span></a>
+      <a class="btn js-cta" href="/dashboard">Open the logbook <span class="ms" aria-hidden="true">arrow_outward</span></a>
       <button class="burger" id="burger" type="button" aria-label="Menu" aria-expanded="false" aria-controls="mpanel">
         <span class="ms" aria-hidden="true">menu</span>
       </button>
@@ -250,7 +250,7 @@ body{margin:0}
     <a class="ml" href="#conditions">Conditions</a>
     <a class="ml" href="#stats">Stats</a>
     <a class="ml" href="#quiver">Quiver</a>
-    <a class="btn" style="margin-top:20px;justify-content:center" href="app.html">Open the logbook</a>
+    <a class="btn js-cta" style="margin-top:20px;justify-content:center" href="/dashboard">Open the logbook</a>
   </div>
 </header>
 
@@ -264,7 +264,7 @@ body{margin:0}
       <h1 class="h-xl" style="margin-top:20px">Every session<br><em>tells a story.</em></h1>
       <p class="lede">Log the conditions, remember the feeling and understand what makes a session worth paddling out for.</p>
       <div class="cta-row">
-        <a class="btn" href="app.html">Start logging <span class="ms" aria-hidden="true">arrow_outward</span></a>
+        <a class="btn js-cta" href="/dashboard">Start logging <span class="ms" aria-hidden="true">arrow_outward</span></a>
         <a class="btn ghost" href="#features">Explore the features</a>
       </div>
     </div>
@@ -532,7 +532,7 @@ body{margin:0}
 <section class="final">
   <div class="wrap rv">
     <h2 class="h-lg">Your next great session deserves to be remembered.</h2>
-    <div class="cta-row" style="margin-top:44px"><a class="btn light" href="app.html">Open Wave Log <span class="ms" aria-hidden="true">arrow_outward</span></a></div>
+    <div class="cta-row" style="margin-top:44px"><a class="btn light js-cta" href="/dashboard">Open Wave Log <span class="ms" aria-hidden="true">arrow_outward</span></a></div>
     <p class="sub">No social feed. No noise. Just your surfing.</p>
   </div>
 </section>
@@ -546,7 +546,7 @@ body{margin:0}
       <p style="color:var(--ink2);margin-top:6px">Built for surfers who pay attention.</p>
     </div>
     <nav aria-label="Footer">
-      <a href="app.html">Logbook</a>
+      <a class="js-cta" href="/dashboard">Logbook</a>
       <a href="#features">Features</a>
       <a href="#conditions">Marine data</a>
     </nav>
@@ -714,7 +714,11 @@ body{margin:0}
     if (e.key === 'Escape' && panel.classList.contains('open')) { setMenu(false); burger.focus(); }
   });
 
-  /* --- 8. Footer year --- */
+  /* --- 8. CTAs: /dashboard when a Supabase session cookie exists, /auth/signup otherwise --- */
+  var signedIn = document.cookie.split('; ').some(function (c) { return /^sb-.+-auth-token/.test(c); });
+  if (!signedIn) all('.js-cta').forEach(function (a) { a.setAttribute('href', '/auth/signup'); });
+
+  /* --- 9. Footer year --- */
   $('year').textContent = new Date().getFullYear();
 })();
 </script>
