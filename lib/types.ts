@@ -1,6 +1,7 @@
 export type SessionRecord = {
   id: string;
   user_id: string;
+  spot_id: string | null;
   spot: string;
   date: string;
   time: string | null;
@@ -19,5 +20,46 @@ export type SessionRecord = {
   board: string | null;
   rating: number | null;
   comments: string | null;
+  conditions_source: string | null;
+  conditions_source_time: string | null;
+  wave_height_m: number | null;
+  swell_height_m: number | null;
+  swell_period_s: number | null;
+  wind_speed_kmh: number | null;
+  current_speed_kmh: number | null;
+  sea_level_m: number | null;
   created_at: string;
+};
+
+export type SpotRecord = {
+  id: string;
+  slug: string;
+  name: string;
+  municipality: string;
+  region: string;
+  country_code: string;
+  latitude: number | null;
+  longitude: number | null;
+  break_type: string;
+  source_name: string | null;
+  source_url: string | null;
+  is_curated: boolean;
+  created_at: string;
+};
+
+export const BOARD_STATUSES = ["Daily driver", "In rotation", "Step-up", "Retired", "For sale"] as const;
+
+export type BoardStatus = (typeof BOARD_STATUSES)[number];
+
+export type BoardRecord = {
+  id: string;
+  user_id: string;
+  name: string;
+  model: string | null;
+  volume_l: number | null;
+  dimensions: string | null;
+  status: BoardStatus | null;
+  best_conditions: string | null;
+  created_at: string;
+  updated_at: string;
 };

@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
 
-import { DashboardShell } from "@/components/dashboard-shell";
+import { WaveLogApp } from "@/components/wavelog/wavelog-app";
 import { getSupabaseEnv } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
-import type { SessionRecord } from "@/lib/types";
+import type { BoardRecord, SessionRecord, SpotRecord } from "@/lib/types";
+
+const BATCH_SIZE = 1000;
 
 export default async function DashboardPage() {
   const env = getSupabaseEnv();
@@ -13,11 +15,14 @@ export default async function DashboardPage() {
       <main className="page">
         <div className="shell">
           <section className="panel">
-            <div className="eyebrow">Service indisponible</div>
+            <div className="eyebrow">Supabase manquant</div>
             <h1 style={{ margin: "10px 0 8px", fontSize: "44px", lineHeight: 1 }}>
-              Impossible d&apos;ouvrir ton journal.
+              Le dashboard attend encore la config.
             </h1>
-            <p>Réessaie dans quelques instants.</p>
+            <p>
+              Ajoute `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` dans `.env.local`,
+              puis recharge l&apos;app.
+            </p>
           </section>
         </div>
       </main>
@@ -33,37 +38,44 @@ export default async function DashboardPage() {
     redirect("/auth/login");
   }
 
-  const { data, error } = await supabase
-    .from("sessions")
-    .select("*")
-    .order("date", { ascending: false })
-    .limit(12);
+  // Overview and stats work on the whole logbook, so every session is loaded (PostgREST caps a page at 1000 rows).
+  async function loadAllSessions() {
+    const rows: SessionRecord[] = [];
+    for (let from = 0; ; from += BATCH_SIZE) {
+      const { data, error } = await supabase
+        .from("sessions")
+        .select("*")
+        .order("date", { ascending: false })
+        .order("created_at", { ascending: false })
+        .range(from, from + BATCH_SIZE - 1);
+      if (error) return { rows, error };
+      const batch = (data as SessionRecord[] | null) ?? [];
+      rows.push(...batch);
+      if (batch.length < BATCH_SIZE) return { rows, error: null };
+    }
+  }
 
-  const sessions = ((data as SessionRecord[] | null) ?? []).filter(Boolean);
-  const rated = sessions.filter((session) => typeof session.rating === "number");
-  const averageRating = rated.length
-    ? (rated.reduce((sum, session) => sum + (session.rating ?? 0), 0) / rated.length).toFixed(1)
-    : "—";
-  const latestSession = sessions[0] ?? null;
-  const uniqueSpots = new Set(sessions.map((session) => session.spot).filter(Boolean)).size;
-  const topSpot = sessions.reduce<Record<string, number>>((acc, session) => {
-    if (session.spot) acc[session.spot] = (acc[session.spot] ?? 0) + 1;
-    return acc;
-  }, {});
-  const favoriteSpot = Object.entries(topSpot).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
+  const [sessionsResult, boardsResult, spotsResult] = await Promise.all([
+    loadAllSessions(),
+    supabase.from("boards").select("*").order("name"),
+    supabase.from("spots").select("*").eq("country_code", "BE").eq("is_curated", true).order("name")
+  ]);
+
+  const errors = [
+    sessionsResult.error?.message,
+    // boards / spots missing usually means a migration in supabase/migrations hasn't been applied yet.
+    boardsResult.error ? `boards: ${boardsResult.error.message}` : null,
+    spotsResult.error ? `spots: ${spotsResult.error.message}` : null
+  ].filter(Boolean);
 
   return (
-    <main className="page">
-      <DashboardShell
-        userEmail={user.email ?? ""}
-        userId={user.id}
-        sessions={sessions}
-        averageRating={averageRating}
-        uniqueSpots={uniqueSpots}
-        favoriteSpot={favoriteSpot}
-        latestSpot={latestSession ? latestSession.spot : "Pas encore de session"}
-        errorMessage={error?.message ?? null}
-      />
-    </main>
+    <WaveLogApp
+      userId={user.id}
+      userEmail={user.email ?? ""}
+      initialSessions={sessionsResult.rows}
+      initialBoards={(boardsResult.data as BoardRecord[] | null) ?? []}
+      spots={(spotsResult.data as SpotRecord[] | null) ?? []}
+      loadError={errors.length ? errors.join(" · ") : null}
+    />
   );
 }

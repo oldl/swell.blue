@@ -21,7 +21,8 @@ export function AuthForm({ mode, message }: Props) {
 
   async function onSubmit(formData: FormData) {
     const email = String(formData.get("email") || "").trim();
-    const password = String(formData.get("password") || "").trim();
+    // Passwords are sent as typed: leading/trailing spaces are part of the password.
+    const password = String(formData.get("password") || "");
 
     if (!email || !password) {
       setError("Email et mot de passe requis.");
@@ -47,10 +48,10 @@ export function AuthForm({ mode, message }: Props) {
         email,
         password,
         options: {
-          emailRedirectTo:
-            typeof window !== "undefined"
-              ? `${window.location.origin}/auth/confirm?next=/dashboard`
-              : undefined
+          // The "Confirm signup" email template builds the link itself:
+          // {{ .RedirectTo }}/auth/confirm?token_hash=...&type=email&next=/dashboard (see README),
+          // so RedirectTo must be the bare site origin.
+          emailRedirectTo: typeof window !== "undefined" ? window.location.origin : undefined
         }
       });
 
@@ -97,10 +98,17 @@ export function AuthForm({ mode, message }: Props) {
 
         <div className="field">
           <label htmlFor="password">Mot de passe</label>
-          <input id="password" name="password" type="password" minLength={8} required />
+          <input
+            id="password"
+            name="password"
+            type="password"
+            minLength={8}
+            autoComplete={mode === "login" ? "current-password" : "new-password"}
+            required
+          />
         </div>
 
-        {success ? <div className="pill" style={{ width: "fit-content" }}>{success}</div> : null}
+        {success ? <div className="notice">{success}</div> : null}
         {error ? <div className="error">{error}</div> : null}
 
         <button className="button" type="submit" disabled={pending}>
